@@ -4,10 +4,10 @@ import { useEffect, useRef, useState, type SubmitEvent } from "react";
 
 // 서버가 못 가져오는 사이트(봇 차단, IP 평판 차단 등)에서 쓰는 북마클릿 —
 // 사용자 본인 브라우저에서 실행되므로 서버측 차단과 무관하게 항상 동작함.
-// 선택한 텍스트가 있으면 그것만, 없으면 페이지 전체를 긁어옴 — 광고/배너 같은
-// 본문과 무관한 텍스트가 섞이는 걸 사용자가 직접 피할 수 있게 함
+// 페이지 전체를 그대로 긁어옴 — 광고/배너 같은 노이즈는 사용자가 선택해서
+// 거르게 하지 않고, 이후 Gemini 파싱 단계(슬라이스 04)에서 걸러지게 둠
 const BOOKMARKLET_HREF =
-  "javascript:(function(){var s=window.getSelection().toString().trim();var t;if(s.length>0){t=s}else{var c=document.body.cloneNode(true);c.querySelectorAll('script,style,nav,header,footer,aside,noscript').forEach(function(e){e.remove()});t=c.textContent.replace(/\\s+/g,' ').trim()}navigator.clipboard.writeText(t).then(function(){alert('텍스트가 복사되었습니다 ('+t.length+'자). GlobalFit 탭에서 붙여넣어 주세요.')}).catch(function(){alert('복사에 실패했습니다. 이 사이트가 클립보드 접근을 막고 있을 수 있어요.')})})();";
+  "javascript:(function(){var c=document.body.cloneNode(true);c.querySelectorAll('script,style,nav,header,footer,aside,noscript').forEach(function(e){e.remove()});var t=c.textContent.replace(/\\s+/g,' ').trim();navigator.clipboard.writeText(t).then(function(){alert('텍스트가 복사되었습니다 ('+t.length+'자). GlobalFit 탭에서 붙여넣어 주세요.')}).catch(function(){alert('복사에 실패했습니다. 이 사이트가 클립보드 접근을 막고 있을 수 있어요.')})})();";
 
 const STORAGE_KEY = "globalfit:last-session";
 const URL_ONLY_PATTERN = /^https?:\/\/\S+$/i;
@@ -237,9 +237,8 @@ export default function Home() {
           URL 가져오기가 안 되는 사이트라면?
         </p>
         <p className="mb-2">
-          아래 버튼을 즐겨찾기 바로 드래그해 두세요. 공고 페이지에서 원하는
-          부분을 마우스로 드래그해 선택한 뒤 클릭하면 그 부분만 복사됩니다
-          (선택 안 하면 페이지 전체가 복사돼요). 서버가 아니라 지금 보고 계신
+          아래 버튼을 즐겨찾기 바로 드래그해 두세요. 공고 페이지에서 클릭하면
+          화면에 보이는 텍스트가 복사됩니다 — 서버가 아니라 지금 보고 계신
           브라우저에서 직접 긁어오는 방식이라 차단되는 사이트에서도 동작해요.
         </p>
         <a
