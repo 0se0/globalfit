@@ -4,23 +4,45 @@ import { useEffect, useState, type SubmitEvent } from "react";
 
 const STORAGE_KEY = "globalfit:last-session";
 const URL_ONLY_PATTERN = /^https?:\/\/\S+$/i;
+// localStorage 용량 한계(브라우저마다 다르지만 보통 5~10MB) 때문에 base64로
+// 저장할 파일 크기를 제한 — base64는 원본보다 約33% 커짐
+const MAX_RESUME_FILE_SIZE = 3 * 1024 * 1024;
+
+interface ResumeFile {
+  name: string;
+  type: string;
+  dataBase64: string;
+}
 
 interface SavedEntry {
   jdText: string;
   resumeText: string;
+  resumeFile: ResumeFile | null;
   savedAt: string;
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result.split(",")[1] ?? "");
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
 }
 
 export default function Home() {
   const [jdText, setJdText] = useState("");
   const [resumeText, setResumeText] = useState("");
+  const [resumeFile, setResumeFile] = useState<ResumeFile | null>(null);
   const [savedEntry, setSavedEntry] = useState<SavedEntry | null>(null);
   const [isFetchingUrl, setIsFetchingUrl] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [isParsingFile, setIsParsingFile] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
-  const isEmpty = !jdText.trim() || !resumeText.trim();
+  const isEmpty = !jdText.trim() || (!resumeText.trim() && !resumeFile);
   const isBlocked = isJdUrl || isEmpty;
 
   useEffect(() => {
@@ -32,6 +54,7 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setJdText(entry.jdText);
     setResumeText(entry.resumeText);
+    setResumeFile(entry.resumeFile ?? null);
     setSavedEntry(entry);
   }, []);
 
@@ -65,26 +88,19 @@ export default function Home() {
       setFileError("HWP는 아직 지원하지 않습니다. 텍스트로 복사해서 붙여넣어 주세요.");
       return;
     }
-
-    setIsParsingFile(true);
-    setFileError(null);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/parse-resume", {
-        method: "POST",
-        body: formData,
-      });
-      if (!res.ok) throw new Error("parse_failed");
-      const data: { text: string } = await res.json();
-      setResumeText(data.text);
-    } catch {
-      setFileError(
-        "이 파일을 읽을 수 없습니다. 텍스트로 복사해서 붙여넣어 주세요."
-      );
-    } finally {
-      setIsParsingFile(false);
+    if (file.size > MAX_RESUME_FILE_SIZE) {
+      setFileError("파일이 너무 큽니다 (3MB 이하만 가능합니다). 텍스트로 복사해서 붙여넣어 주세요.");
+      return;
     }
+
+    setFileError(null);
+    const dataBase64 = await fileToBase64(file);
+    setResumeFile({ name: file.name, type: file.type, dataBase64 });
+    setResumeText("");
+  }
+
+  function handleRemoveFile() {
+    setResumeFile(null);
   }
 
   function handleSubmit(e: SubmitEvent) {
@@ -93,6 +109,7 @@ export default function Home() {
     const entry: SavedEntry = {
       jdText,
       resumeText,
+      resumeFile,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
@@ -103,6 +120,7 @@ export default function Home() {
     localStorage.removeItem(STORAGE_KEY);
     setJdText("");
     setResumeText("");
+    setResumeFile(null);
     setSavedEntry(null);
     setFetchError(null);
     setFileError(null);
@@ -147,30 +165,35 @@ export default function Home() {
           <label htmlFor="resume" className="text-sm font-medium">
             이력서
           </label>
-          <textarea
-            id="resume"
-            value={resumeText}
-            onChange={(e) => {
-              setResumeText(e.target.value);
-              setFileError(null);
-            }}
-            placeholder="이력서 텍스트 (PDF/DOCX/HTML 파일 업로드 가능, HWP는 지원하지 않습니다)"
-            className="min-h-32 rounded-md border border-gray-300 p-3 text-sm"
-          />
-          <div className="flex items-center gap-2">
-            <input
-              type="file"
-              accept=".pdf,.docx,.html,.htm,.hwp"
-              onChange={handleFileChange}
-              disabled={isParsingFile}
-              className="text-sm"
+          {resumeFile ? (
+            <div className="flex items-center gap-2 rounded-md border border-gray-300 p-3 text-sm">
+              <span>📎 {resumeFile.name}</span>
+              <button
+                type="button"
+                onClick={handleRemoveFile}
+                className="text-gray-500 underline"
+              >
+                제거
+              </button>
+            </div>
+          ) : (
+            <textarea
+              id="resume"
+              value={resumeText}
+              onChange={(e) => {
+                setResumeText(e.target.value);
+                setFileError(null);
+              }}
+              placeholder="이력서 텍스트 (또는 아래에서 파일 첨부)"
+              className="min-h-32 rounded-md border border-gray-300 p-3 text-sm"
             />
-            {isParsingFile && (
-              <span className="text-sm text-gray-500">
-                읽는 중... (PDF는 최대 1분 정도 걸릴 수 있어요)
-              </span>
-            )}
-          </div>
+          )}
+          <input
+            type="file"
+            accept=".pdf,.docx,.html,.htm,.hwp"
+            onChange={handleFileChange}
+            className="text-sm"
+          />
           {fileError && <p className="text-sm text-red-600">{fileError}</p>}
         </div>
 
@@ -206,7 +229,9 @@ export default function Home() {
           </p>
           <p>
             <span className="font-medium">이력서:</span>{" "}
-            {savedEntry.resumeText.slice(0, 30)}
+            {savedEntry.resumeFile
+              ? `📎 ${savedEntry.resumeFile.name}`
+              : savedEntry.resumeText.slice(0, 30)}
           </p>
         </div>
       )}
