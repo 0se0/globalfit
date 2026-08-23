@@ -3,8 +3,8 @@
 import { useEffect, useState, type SubmitEvent } from "react";
 
 const STORAGE_KEY = "globalfit:last-session";
-// URL만 붙여넣는 경우를 걸러내기 위한 검사 — 크롤러는 CLAUDE.md 하드 룰로 금지라
-// URL을 받아도 내용을 못 가져오므로, 대신 텍스트 복붙을 요구하는 경고만 띄운다
+// URL 가져오기는 별도 슬라이스라 이번 기능에서는 아직 구현 안 됨 —
+// URL만 붙여넣으면 텍스트 복붙을 요구하는 경고만 띄운다
 const URL_ONLY_PATTERN = /^https?:\/\/\S+$/i;
 
 interface SavedEntry {
@@ -18,6 +18,8 @@ export default function Home() {
   const [resumeText, setResumeText] = useState("");
   const [savedEntry, setSavedEntry] = useState<SavedEntry | null>(null);
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
+  const isEmpty = !jdText.trim() || !resumeText.trim();
+  const isBlocked = isJdUrl || isEmpty;
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -33,7 +35,7 @@ export default function Home() {
 
   function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
-    if (isJdUrl) return;
+    if (isBlocked) return;
     const entry: SavedEntry = {
       jdText,
       resumeText,
@@ -53,15 +55,16 @@ export default function Home() {
           placeholder="공고 텍스트"
         />
         {isJdUrl && (
-          <p>URL은 지원하지 않습니다. 공고 내용을 텍스트로 복사해서 붙여넣어 주세요.</p>
+          <p>해당 URL을 살펴볼 수 없습니다. 텍스트로 복사해서 붙여넣어 주세요.</p>
         )}
         <textarea
           value={resumeText}
           onChange={(e) => setResumeText(e.target.value)}
           placeholder="이력서 텍스트 (PDF/DOCX/HWP 파일 업로드는 지원하지 않습니다 — 텍스트를 복사해서 붙여넣어 주세요)"
         />
-        <button type="submit" disabled={isJdUrl}>
-          저장
+        {!isJdUrl && isEmpty && <p>공고와 이력서를 모두 입력해 주세요.</p>}
+        <button type="submit" disabled={isBlocked}>
+          제출
         </button>
       </form>
       <ul>
