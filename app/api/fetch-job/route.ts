@@ -75,8 +75,12 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ text: text.slice(0, MAX_TEXT_LENGTH) });
-  } catch {
-    return NextResponse.json({ error: "fetch_failed" }, { status: 502 });
+  } catch (err) {
+    // TEMP DEBUG — 원인 확인 후 제거
+    return NextResponse.json(
+      { error: "fetch_failed", debug: err instanceof Error ? err.message : String(err) },
+      { status: 502 }
+    );
   } finally {
     await browser?.close();
   }
