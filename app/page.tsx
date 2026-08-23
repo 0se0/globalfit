@@ -166,7 +166,9 @@ export default function Home() {
               className="text-sm"
             />
             {isParsingFile && (
-              <span className="text-sm text-gray-500">읽는 중...</span>
+              <span className="text-sm text-gray-500">
+                읽는 중... (PDF는 최대 1분 정도 걸릴 수 있어요)
+              </span>
             )}
           </div>
           {fileError && <p className="text-sm text-red-600">{fileError}</p>}
