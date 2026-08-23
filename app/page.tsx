@@ -66,6 +66,14 @@ export default function Home() {
     setSavedEntry(entry);
   }
 
+  function handleReset() {
+    localStorage.removeItem(STORAGE_KEY);
+    setJdText("");
+    setResumeText("");
+    setSavedEntry(null);
+    setFetchError(null);
+  }
+
   return (
     <div>
       <h1>GlobalFit — 국내/해외 채용공고-이력서 핏 분석기</h1>
@@ -100,6 +108,9 @@ export default function Home() {
           제출
         </button>
       </form>
+      <button type="button" onClick={handleReset}>
+        초기화
+      </button>
       <ul>
         {savedEntry && (
           <li>
