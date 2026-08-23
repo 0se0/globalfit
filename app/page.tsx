@@ -3,8 +3,6 @@
 import { useEffect, useState, type SubmitEvent } from "react";
 
 const STORAGE_KEY = "globalfit:last-session";
-// URL 가져오기는 별도 슬라이스라 이번 기능에서는 아직 구현 안 됨 —
-// URL만 붙여넣으면 텍스트 복붙을 요구하는 경고만 띄운다
 const URL_ONLY_PATTERN = /^https?:\/\/\S+$/i;
 
 interface SavedEntry {
@@ -17,6 +15,8 @@ export default function Home() {
   const [jdText, setJdText] = useState("");
   const [resumeText, setResumeText] = useState("");
   const [savedEntry, setSavedEntry] = useState<SavedEntry | null>(null);
+  const [isFetchingUrl, setIsFetchingUrl] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
   const isEmpty = !jdText.trim() || !resumeText.trim();
   const isBlocked = isJdUrl || isEmpty;
@@ -32,6 +32,27 @@ export default function Home() {
     setResumeText(entry.resumeText);
     setSavedEntry(entry);
   }, []);
+
+  async function handleFetchUrl() {
+    setIsFetchingUrl(true);
+    setFetchError(null);
+    try {
+      const res = await fetch("/api/fetch-job", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: jdText.trim() }),
+      });
+      if (!res.ok) throw new Error("fetch_failed");
+      const data: { text: string } = await res.json();
+      setJdText(data.text);
+    } catch {
+      setFetchError(
+        "이 URL을 가져올 수 없습니다. 텍스트로 복사해서 붙여넣어 주세요."
+      );
+    } finally {
+      setIsFetchingUrl(false);
+    }
+  }
 
   function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
@@ -51,11 +72,23 @@ export default function Home() {
       <form onSubmit={handleSubmit}>
         <textarea
           value={jdText}
-          onChange={(e) => setJdText(e.target.value)}
-          placeholder="공고 텍스트"
+          onChange={(e) => {
+            setJdText(e.target.value);
+            setFetchError(null);
+          }}
+          placeholder="공고 텍스트 또는 공고 URL"
         />
         {isJdUrl && (
-          <p>해당 URL을 살펴볼 수 없습니다. 텍스트로 복사해서 붙여넣어 주세요.</p>
+          <>
+            <button
+              type="button"
+              onClick={handleFetchUrl}
+              disabled={isFetchingUrl}
+            >
+              {isFetchingUrl ? "가져오는 중..." : "URL에서 가져오기"}
+            </button>
+            {fetchError && <p>{fetchError}</p>}
+          </>
         )}
         <textarea
           value={resumeText}
