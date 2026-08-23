@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, type SubmitEvent } from "react";
+import { useEffect, useRef, useState, type SubmitEvent } from "react";
+
+// 서버가 못 가져오는 사이트(봇 차단, IP 평판 차단 등)에서 쓰는 북마클릿 —
+// 사용자 본인 브라우저에서 실행되므로 서버측 차단과 무관하게 항상 동작함.
+// 우리 서버의 본문 추출 로직(태그 제거 목록)과 동일하게 맞춤
+const BOOKMARKLET_HREF =
+  "javascript:(function(){var c=document.body.cloneNode(true);c.querySelectorAll('script,style,nav,header,footer,aside,noscript').forEach(function(e){e.remove()});var t=c.textContent.replace(/\\s+/g,' ').trim();navigator.clipboard.writeText(t).then(function(){alert('텍스트가 복사되었습니다 ('+t.length+'자). GlobalFit 탭에서 붙여넣어 주세요.')}).catch(function(){alert('복사에 실패했습니다. 이 사이트가 클립보드 접근을 막고 있을 수 있어요.')})})();";
 
 const STORAGE_KEY = "globalfit:last-session";
 const URL_ONLY_PATTERN = /^https?:\/\/\S+$/i;
@@ -44,6 +50,13 @@ export default function Home() {
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
   const isEmpty = !jdText.trim() || (!resumeText.trim() && !resumeFile);
   const isBlocked = isJdUrl || isEmpty;
+  const bookmarkletRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    // React 19이 XSS 방지 차원에서 javascript: href를 JSX 단계에서 무력화시켜서
+    // (드래그해도 실제 스크립트 대신 에러가 복사됨) — ref로 DOM에 직접 설정해서 우회
+    bookmarkletRef.current?.setAttribute("href", BOOKMARKLET_HREF);
+  }, []);
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -217,6 +230,24 @@ export default function Home() {
       >
         초기화
       </button>
+
+      <div className="rounded-md border border-gray-200 p-4 text-sm text-gray-600">
+        <p className="mb-1 font-medium text-gray-800">
+          URL 가져오기가 안 되는 사이트라면?
+        </p>
+        <p className="mb-2">
+          아래 버튼을 즐겨찾기 바로 드래그해 두세요. 공고 페이지에서 클릭하면
+          화면에 보이는 텍스트가 복사됩니다 — 서버가 아니라 지금 보고 계신
+          브라우저에서 직접 긁어오는 방식이라 차단되는 사이트에서도 동작해요.
+        </p>
+        <a
+          ref={bookmarkletRef}
+          onClick={(e) => e.preventDefault()}
+          className="inline-block cursor-move rounded-md bg-gray-900 px-3 py-1.5 text-sm text-white"
+        >
+          📌 텍스트 긁어오기
+        </a>
+      </div>
 
       {savedEntry && (
         <div className="rounded-md border border-gray-200 p-4 text-sm">
