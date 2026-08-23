@@ -141,132 +141,153 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10">
-      <h1 className="text-xl font-semibold">
-        GlobalFit — 국내/해외 채용공고-이력서 핏 분석기
-      </h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="jd" className="text-sm font-medium">
-            공고
-          </label>
-          <textarea
-            id="jd"
-            value={jdText}
-            onChange={(e) => {
-              setJdText(e.target.value);
-              setFetchError(null);
-            }}
-            placeholder="공고 텍스트 또는 공고 URL"
-            className="min-h-32 rounded-md border border-gray-300 p-3 text-sm"
-          />
-          {isJdUrl && (
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={handleFetchUrl}
-                disabled={isFetchingUrl}
-                className="self-start rounded-md bg-gray-900 px-3 py-1.5 text-sm text-white disabled:opacity-50"
-              >
-                {isFetchingUrl ? "가져오는 중..." : "URL에서 가져오기"}
-              </button>
-              {fetchError && <p className="text-sm text-red-600">{fetchError}</p>}
-            </div>
-          )}
+    <div className="min-h-screen bg-gray-50">
+      <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-12">
+        <div>
+          <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+            GlobalFit
+          </span>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900">
+            국내/해외 채용공고-이력서 핏 분석기
+          </h1>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="resume" className="text-sm font-medium">
-            이력서
-          </label>
-          {resumeFile ? (
-            <div className="flex items-center gap-2 rounded-md border border-gray-300 p-3 text-sm">
-              <span>📎 {resumeFile.name}</span>
-              <button
-                type="button"
-                onClick={handleRemoveFile}
-                className="text-gray-500 underline"
-              >
-                제거
-              </button>
-            </div>
-          ) : (
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8"
+        >
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="jd"
+              className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+            >
+              공고
+            </label>
             <textarea
-              id="resume"
-              value={resumeText}
+              id="jd"
+              value={jdText}
               onChange={(e) => {
-                setResumeText(e.target.value);
-                setFileError(null);
+                setJdText(e.target.value);
+                setFetchError(null);
               }}
-              placeholder="이력서 텍스트 (또는 아래에서 파일 첨부)"
-              className="min-h-32 rounded-md border border-gray-300 p-3 text-sm"
+              placeholder="공고 텍스트 또는 공고 URL"
+              className="min-h-32 rounded-xl border border-gray-200 p-3.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
             />
-          )}
-          <input
-            type="file"
-            accept=".pdf,.docx,.html,.htm,.hwp"
-            onChange={handleFileChange}
-            className="text-sm"
-          />
-          {fileError && <p className="text-sm text-red-600">{fileError}</p>}
-        </div>
+            {isJdUrl && (
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={handleFetchUrl}
+                  disabled={isFetchingUrl}
+                  className="self-start rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {isFetchingUrl ? "가져오는 중..." : "URL에서 가져오기"}
+                </button>
+                {fetchError && (
+                  <p className="text-sm text-red-600">{fetchError}</p>
+                )}
+              </div>
+            )}
+          </div>
 
-        {!isJdUrl && isEmpty && (
-          <p className="text-sm text-red-600">공고와 이력서를 모두 입력해 주세요.</p>
-        )}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="resume"
+              className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+            >
+              이력서
+            </label>
+            {resumeFile ? (
+              <div className="flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50 p-3.5 text-sm text-indigo-900">
+                <span>📎 {resumeFile.name}</span>
+                <button
+                  type="button"
+                  onClick={handleRemoveFile}
+                  className="text-indigo-500 underline hover:text-indigo-700"
+                >
+                  제거
+                </button>
+              </div>
+            ) : (
+              <textarea
+                id="resume"
+                value={resumeText}
+                onChange={(e) => {
+                  setResumeText(e.target.value);
+                  setFileError(null);
+                }}
+                placeholder="이력서 텍스트 (또는 아래에서 파일 첨부)"
+                className="min-h-32 rounded-xl border border-gray-200 p-3.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+              />
+            )}
+            <input
+              type="file"
+              accept=".pdf,.docx,.html,.htm,.hwp"
+              onChange={handleFileChange}
+              className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-200"
+            />
+            {fileError && <p className="text-sm text-red-600">{fileError}</p>}
+          </div>
+
+          {!isJdUrl && isEmpty && (
+            <p className="text-sm text-red-600">
+              공고와 이력서를 모두 입력해 주세요.
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={isBlocked}
+            className="rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+          >
+            제출
+          </button>
+        </form>
 
         <button
-          type="submit"
-          disabled={isBlocked}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+          type="button"
+          onClick={handleReset}
+          className="self-start text-sm text-gray-400 underline hover:text-gray-600"
         >
-          제출
+          초기화
         </button>
-      </form>
 
-      <button
-        type="button"
-        onClick={handleReset}
-        className="self-start text-sm text-gray-500 underline"
-      >
-        초기화
-      </button>
-
-      <div className="rounded-md border border-gray-200 p-4 text-sm text-gray-600">
-        <p className="mb-1 font-medium text-gray-800">
-          URL 가져오기가 안 되는 사이트라면?
-        </p>
-        <p className="mb-2">
-          아래 버튼을 즐겨찾기 바로 드래그해 두세요. 공고 페이지에서 클릭하면
-          화면에 보이는 텍스트가 복사됩니다 — 서버가 아니라 지금 보고 계신
-          브라우저에서 직접 긁어오는 방식이라 차단되는 사이트에서도 동작해요.
-        </p>
-        <a
-          ref={bookmarkletRef}
-          onClick={(e) => e.preventDefault()}
-          className="inline-block cursor-move rounded-md bg-gray-900 px-3 py-1.5 text-sm text-white"
-        >
-          📌 텍스트 긁어오기
-        </a>
-      </div>
-
-      {savedEntry && (
-        <div className="rounded-md border border-gray-200 p-4 text-sm">
-          <p className="mb-2 text-xs text-gray-500">
-            저장됨 ({savedEntry.savedAt})
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-100/60 p-5 text-sm text-gray-600">
+          <p className="mb-1 font-semibold text-gray-800">
+            URL 가져오기가 안 되는 사이트라면?
           </p>
-          <p>
-            <span className="font-medium">공고:</span>{" "}
-            {savedEntry.jdText.slice(0, 30)}
+          <p className="mb-3">
+            아래 버튼을 즐겨찾기 바로 드래그해 두세요. 공고 페이지에서 클릭하면
+            화면에 보이는 텍스트가 복사됩니다 — 서버가 아니라 지금 보고 계신
+            브라우저에서 직접 긁어오는 방식이라 차단되는 사이트에서도 동작해요.
           </p>
-          <p>
-            <span className="font-medium">이력서:</span>{" "}
-            {savedEntry.resumeFile
-              ? `📎 ${savedEntry.resumeFile.name}`
-              : savedEntry.resumeText.slice(0, 30)}
-          </p>
+          <a
+            ref={bookmarkletRef}
+            onClick={(e) => e.preventDefault()}
+            className="inline-block cursor-move rounded-lg bg-gray-800 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-gray-900"
+          >
+            📌 텍스트 긁어오기
+          </a>
         </div>
-      )}
+
+        {savedEntry && (
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-sm text-emerald-900">
+            <p className="mb-2 text-xs font-medium text-emerald-600">
+              ✓ 저장됨 · {savedEntry.savedAt}
+            </p>
+            <p>
+              <span className="font-semibold">공고:</span>{" "}
+              {savedEntry.jdText.slice(0, 30)}
+            </p>
+            <p>
+              <span className="font-semibold">이력서:</span>{" "}
+              {savedEntry.resumeFile
+                ? `📎 ${savedEntry.resumeFile.name}`
+                : savedEntry.resumeText.slice(0, 30)}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
