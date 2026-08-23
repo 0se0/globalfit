@@ -54,10 +54,17 @@ export async function POST(request: Request) {
       }
     });
 
-    await page.goto(url, {
+    const response = await page.goto(url, {
       waitUntil: "domcontentloaded",
       timeout: NAV_TIMEOUT_MS,
     });
+
+    if (!response || !response.ok()) {
+      // CDN/WAF 차단 페이지(예: CloudFront 403)는 본문 길이가 충분해서
+      // content_too_short 체크를 통과해버림 — HTTP 상태로 먼저 걸러냄
+      return NextResponse.json({ error: "fetch_failed" }, { status: 502 });
+    }
+
     // JS 렌더링이 domcontentloaded 이후 조금 더 걸리는 사이트가 많아서
     // networkidle을 기다리는 대신 짧게 고정 대기 — 광고/추적 스크립트가 계속
     // 떠 있는 사이트에서 networkidle이 영영 안 끝나는 걸 피하기 위함
