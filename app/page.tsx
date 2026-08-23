@@ -17,6 +17,8 @@ export default function Home() {
   const [savedEntry, setSavedEntry] = useState<SavedEntry | null>(null);
   const [isFetchingUrl, setIsFetchingUrl] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isParsingFile, setIsParsingFile] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
   const isEmpty = !jdText.trim() || !resumeText.trim();
   const isBlocked = isJdUrl || isEmpty;
@@ -54,6 +56,37 @@ export default function Home() {
     }
   }
 
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // 같은 파일을 다시 선택해도 onChange가 다시 발생하도록
+    if (!file) return;
+
+    if (file.name.toLowerCase().endsWith(".hwp")) {
+      setFileError("HWP는 아직 지원하지 않습니다. 텍스트로 복사해서 붙여넣어 주세요.");
+      return;
+    }
+
+    setIsParsingFile(true);
+    setFileError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/parse-resume", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("parse_failed");
+      const data: { text: string } = await res.json();
+      setResumeText(data.text);
+    } catch {
+      setFileError(
+        "이 파일을 읽을 수 없습니다. 텍스트로 복사해서 붙여넣어 주세요."
+      );
+    } finally {
+      setIsParsingFile(false);
+    }
+  }
+
   function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
     if (isBlocked) return;
@@ -72,6 +105,7 @@ export default function Home() {
     setResumeText("");
     setSavedEntry(null);
     setFetchError(null);
+    setFileError(null);
   }
 
   return (
@@ -116,10 +150,26 @@ export default function Home() {
           <textarea
             id="resume"
             value={resumeText}
-            onChange={(e) => setResumeText(e.target.value)}
-            placeholder="이력서 텍스트 (PDF/DOCX/HWP 파일 업로드는 지원하지 않습니다 — 텍스트를 복사해서 붙여넣어 주세요)"
+            onChange={(e) => {
+              setResumeText(e.target.value);
+              setFileError(null);
+            }}
+            placeholder="이력서 텍스트 (PDF/DOCX/HTML 파일 업로드 가능, HWP는 지원하지 않습니다)"
             className="min-h-32 rounded-md border border-gray-300 p-3 text-sm"
           />
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              accept=".pdf,.docx,.html,.htm,.hwp"
+              onChange={handleFileChange}
+              disabled={isParsingFile}
+              className="text-sm"
+            />
+            {isParsingFile && (
+              <span className="text-sm text-gray-500">읽는 중...</span>
+            )}
+          </div>
+          {fileError && <p className="text-sm text-red-600">{fileError}</p>}
         </div>
 
         {!isJdUrl && isEmpty && (
