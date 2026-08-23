@@ -75,50 +75,89 @@ export default function Home() {
   }
 
   return (
-    <div>
-      <h1>GlobalFit — 국내/해외 채용공고-이력서 핏 분석기</h1>
-      <form onSubmit={handleSubmit}>
-        <textarea
-          value={jdText}
-          onChange={(e) => {
-            setJdText(e.target.value);
-            setFetchError(null);
-          }}
-          placeholder="공고 텍스트 또는 공고 URL"
-        />
-        {isJdUrl && (
-          <>
-            <button
-              type="button"
-              onClick={handleFetchUrl}
-              disabled={isFetchingUrl}
-            >
-              {isFetchingUrl ? "가져오는 중..." : "URL에서 가져오기"}
-            </button>
-            {fetchError && <p>{fetchError}</p>}
-          </>
+    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10">
+      <h1 className="text-xl font-semibold">
+        GlobalFit — 국내/해외 채용공고-이력서 핏 분석기
+      </h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="jd" className="text-sm font-medium">
+            공고
+          </label>
+          <textarea
+            id="jd"
+            value={jdText}
+            onChange={(e) => {
+              setJdText(e.target.value);
+              setFetchError(null);
+            }}
+            placeholder="공고 텍스트 또는 공고 URL"
+            className="min-h-32 rounded-md border border-gray-300 p-3 text-sm"
+          />
+          {isJdUrl && (
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleFetchUrl}
+                disabled={isFetchingUrl}
+                className="self-start rounded-md bg-gray-900 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+              >
+                {isFetchingUrl ? "가져오는 중..." : "URL에서 가져오기"}
+              </button>
+              {fetchError && <p className="text-sm text-red-600">{fetchError}</p>}
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="resume" className="text-sm font-medium">
+            이력서
+          </label>
+          <textarea
+            id="resume"
+            value={resumeText}
+            onChange={(e) => setResumeText(e.target.value)}
+            placeholder="이력서 텍스트 (PDF/DOCX/HWP 파일 업로드는 지원하지 않습니다 — 텍스트를 복사해서 붙여넣어 주세요)"
+            className="min-h-32 rounded-md border border-gray-300 p-3 text-sm"
+          />
+        </div>
+
+        {!isJdUrl && isEmpty && (
+          <p className="text-sm text-red-600">공고와 이력서를 모두 입력해 주세요.</p>
         )}
-        <textarea
-          value={resumeText}
-          onChange={(e) => setResumeText(e.target.value)}
-          placeholder="이력서 텍스트 (PDF/DOCX/HWP 파일 업로드는 지원하지 않습니다 — 텍스트를 복사해서 붙여넣어 주세요)"
-        />
-        {!isJdUrl && isEmpty && <p>공고와 이력서를 모두 입력해 주세요.</p>}
-        <button type="submit" disabled={isBlocked}>
+
+        <button
+          type="submit"
+          disabled={isBlocked}
+          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+        >
           제출
         </button>
       </form>
-      <button type="button" onClick={handleReset}>
+
+      <button
+        type="button"
+        onClick={handleReset}
+        className="self-start text-sm text-gray-500 underline"
+      >
         초기화
       </button>
-      <ul>
-        {savedEntry && (
-          <li>
-            저장됨 ({savedEntry.savedAt}) — 공고: {savedEntry.jdText.slice(0, 30)} / 이력서:{" "}
+
+      {savedEntry && (
+        <div className="rounded-md border border-gray-200 p-4 text-sm">
+          <p className="mb-2 text-xs text-gray-500">
+            저장됨 ({savedEntry.savedAt})
+          </p>
+          <p>
+            <span className="font-medium">공고:</span>{" "}
+            {savedEntry.jdText.slice(0, 30)}
+          </p>
+          <p>
+            <span className="font-medium">이력서:</span>{" "}
             {savedEntry.resumeText.slice(0, 30)}
-          </li>
-        )}
-      </ul>
+          </p>
+        </div>
+      )}
     </div>
   );
 }
