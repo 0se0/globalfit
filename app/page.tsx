@@ -85,6 +85,19 @@ async function extractResumeFileText(resumeFile: ResumeFile): Promise<string> {
   return data.text;
 }
 
+const SUBMISSION_METHOD_LABELS: Record<ParsedJob["submission_method"], string> = {
+  company_site: "회사 홈페이지",
+  job_platform: "채용 플랫폼",
+  email: "이메일",
+  unclear: "명시되지 않음",
+};
+
+function scoreColorClass(score: number): string {
+  if (score >= 70) return "text-emerald-600";
+  if (score >= 40) return "text-amber-600";
+  return "text-red-600";
+}
+
 // PDF는 Gemini가 파일을 직접 읽고 구조화까지 한 번에 하므로(parse-applicant),
 // 텍스트만 따로 추출하는 /api/parse-resume 호출(무료 티어 일일 호출 소모)을
 // 건너뛴다. DOCX/HTML은 추출 자체가 로컬 라이브러리(mammoth/cheerio)라 무료라
@@ -448,7 +461,7 @@ export default function Home() {
         {(isParsingJob || parsedJob || parseJobError) && (
           <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
             <p className="mb-2 text-xs font-medium text-gray-400">
-              공고 분석 결과 (슬라이스 09에서 화면 정리 예정)
+              공고 분석 결과 (디버그용 — 매칭 점수/gap은 아래 결과 카드 참고)
             </p>
             {isParsingJob && <p className="text-gray-500">분석 중...</p>}
             {parseJobError && <p className="text-red-600">{parseJobError}</p>}
@@ -463,7 +476,7 @@ export default function Home() {
         {(isParsingApplicant || parsedApplicant || parseApplicantError) && (
           <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
             <p className="mb-2 text-xs font-medium text-gray-400">
-              이력서 분석 결과 (슬라이스 09에서 화면 정리 예정)
+              이력서 분석 결과 (디버그용)
             </p>
             {isParsingApplicant && <p className="text-gray-500">분석 중...</p>}
             {parseApplicantError && (
@@ -480,7 +493,7 @@ export default function Home() {
         {(isJudgingJob || judgeResult || judgeError) && (
           <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
             <p className="mb-2 text-xs font-medium text-gray-400">
-              판단 지점 에이전트 결과 (슬라이스 09에서 화면 정리 예정)
+              판단 지점 에이전트 결과 (디버그용)
             </p>
             {isJudgingJob && <p className="text-gray-500">분석 중...</p>}
             {judgeError && <p className="text-red-600">{judgeError}</p>}
@@ -492,14 +505,53 @@ export default function Home() {
           </div>
         )}
 
-        {matchResult && (
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
-            <p className="mb-2 text-xs font-medium text-gray-400">
-              매칭 결과 (슬라이스 09에서 화면 정리 예정)
-            </p>
-            <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
-              {JSON.stringify(matchResult, null, 2)}
-            </pre>
+        {matchResult && parsedJob && (
+          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8">
+            <div className="flex flex-col items-center gap-1 border-b border-gray-100 pb-6">
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                매칭 점수
+              </span>
+              <span className={`text-5xl font-bold ${scoreColorClass(matchResult.score)}`}>
+                {matchResult.score}%
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1 border-b border-gray-100 py-4 text-sm text-gray-700">
+              <p>
+                📋 지원 방법:{" "}
+                <span className="font-medium">
+                  {SUBMISSION_METHOD_LABELS[parsedJob.submission_method]}
+                </span>
+              </p>
+              <p>
+                📎 필요 서류:{" "}
+                <span className="font-medium">
+                  {parsedJob.required_documents.length > 0
+                    ? parsedJob.required_documents.join(", ")
+                    : "명시된 서류 없음"}
+                </span>
+              </p>
+            </div>
+
+            <div className="pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                부족한 스택
+              </p>
+              {matchResult.gap_stacks.length === 0 ? (
+                <p className="text-sm text-gray-500">부족한 스택 없음</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {matchResult.gap_stacks.map((stack) => (
+                    <span
+                      key={stack}
+                      className="rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700 ring-1 ring-red-200"
+                    >
+                      {stack}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
