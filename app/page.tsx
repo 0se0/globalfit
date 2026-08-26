@@ -28,6 +28,34 @@ interface SavedEntry {
   savedAt: string;
 }
 
+interface CanonicalizedStack {
+  raw: string;
+  canonical: string | null;
+  registered: boolean;
+}
+
+interface ParsedJob {
+  required_stacks: CanonicalizedStack[];
+  preferred_stacks: CanonicalizedStack[];
+  submission_method: "company_site" | "job_platform" | "email" | "unclear";
+  required_documents: string[];
+}
+
+interface ParsedApplicant {
+  stacks: CanonicalizedStack[];
+  projects: string[];
+  years_of_experience: string;
+  experience: string[];
+}
+
+interface JudgeResult {
+  ambiguous_requirements: { original_text: string; interpretation: string }[];
+  low_confidence_fields: { field: string; reason: string }[];
+  keyword_lookups: { stack_name: string; canonical: string | null; registered: boolean }[];
+  tool_call_count: number;
+  skipped: boolean;
+}
+
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -40,6 +68,33 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+function base64ToFile(resumeFile: ResumeFile): File {
+  const bytes = atob(resumeFile.dataBase64);
+  const array = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) array[i] = bytes.charCodeAt(i);
+  return new File([array], resumeFile.name, { type: resumeFile.type });
+}
+
+async function extractResumeFileText(resumeFile: ResumeFile): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", base64ToFile(resumeFile));
+  const res = await fetch("/api/parse-resume", { method: "POST", body: formData });
+  if (!res.ok) throw new Error("extract_failed");
+  const data: { text: string } = await res.json();
+  return data.text;
+}
+
+// PDF는 Gemini가 파일을 직접 읽고 구조화까지 한 번에 하므로(parse-applicant),
+// 텍스트만 따로 추출하는 /api/parse-resume 호출(무료 티어 일일 호출 소모)을
+// 건너뛴다. DOCX/HTML은 추출 자체가 로컬 라이브러리(mammoth/cheerio)라 무료라
+// 합칠 이유가 없어 기존 방식(추출 후 구조화, 2단계) 유지
+function isPdfFile(resumeFile: ResumeFile): boolean {
+  return (
+    resumeFile.type === "application/pdf" ||
+    resumeFile.name.toLowerCase().endsWith(".pdf")
+  );
+}
+
 export default function Home() {
   const [jdText, setJdText] = useState("");
   const [resumeText, setResumeText] = useState("");
@@ -48,6 +103,15 @@ export default function Home() {
   const [isFetchingUrl, setIsFetchingUrl] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [isParsingJob, setIsParsingJob] = useState(false);
+  const [parsedJob, setParsedJob] = useState<ParsedJob | null>(null);
+  const [parseJobError, setParseJobError] = useState<string | null>(null);
+  const [isParsingApplicant, setIsParsingApplicant] = useState(false);
+  const [parsedApplicant, setParsedApplicant] = useState<ParsedApplicant | null>(null);
+  const [parseApplicantError, setParseApplicantError] = useState<string | null>(null);
+  const [isJudgingJob, setIsJudgingJob] = useState(false);
+  const [judgeResult, setJudgeResult] = useState<JudgeResult | null>(null);
+  const [judgeError, setJudgeError] = useState<string | null>(null);
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
   const isEmpty = !jdText.trim() || (!resumeText.trim() && !resumeFile);
   const isBlocked = isJdUrl || isEmpty;
@@ -117,7 +181,7 @@ export default function Home() {
     setResumeFile(null);
   }
 
-  function handleSubmit(e: SubmitEvent) {
+  async function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
     if (isBlocked) return;
     const entry: SavedEntry = {
@@ -128,6 +192,81 @@ export default function Home() {
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
     setSavedEntry(entry);
+
+    setIsParsingJob(true);
+    setParseJobError(null);
+    setParsedJob(null);
+    setIsJudgingJob(false);
+    setJudgeResult(null);
+    setJudgeError(null);
+    const parseJobPromise = (async () => {
+      try {
+        const res = await fetch("/api/parse-job", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jdText }),
+        });
+        if (!res.ok) throw new Error("parse_failed");
+        const data: ParsedJob = await res.json();
+        setParsedJob(data);
+        setIsParsingJob(false);
+
+        setIsJudgingJob(true);
+        try {
+          const judgeRes = await fetch("/api/judge-job", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ jdText, parsedJob: data }),
+          });
+          if (!judgeRes.ok) throw new Error("judge_failed");
+          const judgeData: JudgeResult = await judgeRes.json();
+          setJudgeResult(judgeData);
+        } catch {
+          setJudgeError("판단 지점 분석에 실패했습니다. 다시 시도해주세요.");
+        } finally {
+          setIsJudgingJob(false);
+        }
+      } catch {
+        setParseJobError("공고 분석에 실패했습니다. 다시 시도해주세요.");
+        setIsParsingJob(false);
+      }
+    })();
+
+    setIsParsingApplicant(true);
+    setParseApplicantError(null);
+    setParsedApplicant(null);
+    const parseApplicantPromise = (async () => {
+      try {
+        let body: { resumeText?: string; resumeFile?: { dataBase64: string; mimeType: string } };
+        if (resumeFile && isPdfFile(resumeFile)) {
+          body = {
+            resumeFile: {
+              dataBase64: resumeFile.dataBase64,
+              mimeType: resumeFile.type || "application/pdf",
+            },
+          };
+        } else {
+          const text = resumeFile
+            ? await extractResumeFileText(resumeFile)
+            : resumeText;
+          body = { resumeText: text };
+        }
+        const res = await fetch("/api/parse-applicant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error("parse_failed");
+        const data: ParsedApplicant = await res.json();
+        setParsedApplicant(data);
+      } catch {
+        setParseApplicantError("이력서 분석에 실패했습니다. 다시 시도해주세요.");
+      } finally {
+        setIsParsingApplicant(false);
+      }
+    })();
+
+    await Promise.all([parseJobPromise, parseApplicantPromise]);
   }
 
   function handleReset() {
@@ -138,6 +277,12 @@ export default function Home() {
     setSavedEntry(null);
     setFetchError(null);
     setFileError(null);
+    setParsedJob(null);
+    setParseJobError(null);
+    setParsedApplicant(null);
+    setParseApplicantError(null);
+    setJudgeResult(null);
+    setJudgeError(null);
   }
 
   return (
@@ -285,6 +430,53 @@ export default function Home() {
                 ? `📎 ${savedEntry.resumeFile.name}`
                 : savedEntry.resumeText.slice(0, 30)}
             </p>
+          </div>
+        )}
+
+        {(isParsingJob || parsedJob || parseJobError) && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
+            <p className="mb-2 text-xs font-medium text-gray-400">
+              공고 분석 결과 (슬라이스 09에서 화면 정리 예정)
+            </p>
+            {isParsingJob && <p className="text-gray-500">분석 중...</p>}
+            {parseJobError && <p className="text-red-600">{parseJobError}</p>}
+            {parsedJob && (
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
+                {JSON.stringify(parsedJob, null, 2)}
+              </pre>
+            )}
+          </div>
+        )}
+
+        {(isParsingApplicant || parsedApplicant || parseApplicantError) && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
+            <p className="mb-2 text-xs font-medium text-gray-400">
+              이력서 분석 결과 (슬라이스 09에서 화면 정리 예정)
+            </p>
+            {isParsingApplicant && <p className="text-gray-500">분석 중...</p>}
+            {parseApplicantError && (
+              <p className="text-red-600">{parseApplicantError}</p>
+            )}
+            {parsedApplicant && (
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
+                {JSON.stringify(parsedApplicant, null, 2)}
+              </pre>
+            )}
+          </div>
+        )}
+
+        {(isJudgingJob || judgeResult || judgeError) && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
+            <p className="mb-2 text-xs font-medium text-gray-400">
+              판단 지점 에이전트 결과 (슬라이스 09에서 화면 정리 예정)
+            </p>
+            {isJudgingJob && <p className="text-gray-500">분석 중...</p>}
+            {judgeError && <p className="text-red-600">{judgeError}</p>}
+            {judgeResult && (
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
+                {JSON.stringify(judgeResult, null, 2)}
+              </pre>
+            )}
           </div>
         )}
       </div>
