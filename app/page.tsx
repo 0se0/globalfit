@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type SubmitEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type SubmitEvent } from "react";
+import { calculateMatch } from "@/lib/calculate-match";
 
 // 서버가 못 가져오는 사이트(봇 차단, IP 평판 차단 등)에서 쓰는 북마클릿 —
 // 사용자 본인 브라우저에서 실행되므로 서버측 차단과 무관하게 항상 동작함.
@@ -116,6 +117,17 @@ export default function Home() {
   const isEmpty = !jdText.trim() || (!resumeText.trim() && !resumeFile);
   const isBlocked = isJdUrl || isEmpty;
   const bookmarkletRef = useRef<HTMLAnchorElement>(null);
+
+  // API 키가 필요 없는 순수 계산이라 서버로 보내지 않고 클라이언트에서 바로
+  // 계산한다 (불필요한 네트워크 왕복 없음)
+  const matchResult = useMemo(() => {
+    if (!parsedJob || !parsedApplicant) return null;
+    return calculateMatch(
+      parsedJob.required_stacks,
+      parsedJob.preferred_stacks,
+      parsedApplicant.stacks
+    );
+  }, [parsedJob, parsedApplicant]);
 
   useEffect(() => {
     // React 19이 XSS 방지 차원에서 javascript: href를 JSX 단계에서 무력화시켜서
@@ -477,6 +489,17 @@ export default function Home() {
                 {JSON.stringify(judgeResult, null, 2)}
               </pre>
             )}
+          </div>
+        )}
+
+        {matchResult && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
+            <p className="mb-2 text-xs font-medium text-gray-400">
+              매칭 결과 (슬라이스 09에서 화면 정리 예정)
+            </p>
+            <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
+              {JSON.stringify(matchResult, null, 2)}
+            </pre>
           </div>
         )}
       </div>
