@@ -57,6 +57,16 @@ interface JudgeResult {
   skipped: boolean;
 }
 
+interface ApplicantInput {
+  resumeText?: string;
+  resumeFile?: { dataBase64: string; mimeType: string };
+}
+
+interface SuggestionResult {
+  resume_suggestion: string;
+  confirmed_gap_stacks: string[];
+}
+
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -141,6 +151,10 @@ export default function Home() {
   const [isJudgingJob, setIsJudgingJob] = useState(false);
   const [judgeResult, setJudgeResult] = useState<JudgeResult | null>(null);
   const [judgeError, setJudgeError] = useState<string | null>(null);
+  const [applicantInput, setApplicantInput] = useState<ApplicantInput | null>(null);
+  const [isSuggestingResume, setIsSuggestingResume] = useState(false);
+  const [suggestionResult, setSuggestionResult] = useState<SuggestionResult | null>(null);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
   const isEmpty = !jdText.trim() || (!resumeText.trim() && !resumeFile);
   const isBlocked = isJdUrl || isEmpty;
@@ -156,6 +170,22 @@ export default function Home() {
       parsedApplicant.stacks
     );
   }, [parsedJob, parsedApplicant]);
+
+  // 재구성 제안이 "새로 찾아낸" 스택(confirmed_gap_stacks)은 원본에 이미 있었지만
+  // 05가 처음에 놓친 것뿐이라, 원본 required/preferred 목록에서 같은 raw 이름의
+  // CanonicalizedStack을 그대로 가져와 합친다 — 새로 캐노니컬라이즈하지 않음
+  // (08의 calculateMatch는 여전히 순수 함수 그대로 재사용, 하드 룰 4번 유지)
+  const improvedMatch = useMemo(() => {
+    if (!parsedJob || !parsedApplicant || !suggestionResult) return null;
+    const allJobStacks = [...parsedJob.required_stacks, ...parsedJob.preferred_stacks];
+    const confirmedStacks = suggestionResult.confirmed_gap_stacks
+      .map((raw) => allJobStacks.find((stack) => stack.raw === raw))
+      .filter((stack): stack is CanonicalizedStack => stack !== undefined);
+    return calculateMatch(parsedJob.required_stacks, parsedJob.preferred_stacks, [
+      ...parsedApplicant.stacks,
+      ...confirmedStacks,
+    ]);
+  }, [parsedJob, parsedApplicant, suggestionResult]);
 
   useEffect(() => {
     // React 19이 XSS 방지 차원에서 javascript: href를 JSX 단계에서 무력화시켜서
@@ -268,8 +298,11 @@ export default function Home() {
     setIsParsingApplicant(true);
     setParseApplicantError(null);
     setParsedApplicant(null);
+    setApplicantInput(null);
+    setSuggestionResult(null);
+    setSuggestionError(null);
     try {
-      let body: { resumeText?: string; resumeFile?: { dataBase64: string; mimeType: string } };
+      let body: ApplicantInput;
       if (file && isPdfFile(file)) {
         body = {
           resumeFile: {
@@ -281,6 +314,7 @@ export default function Home() {
         const resolvedText = file ? await extractResumeFileText(file) : text;
         body = { resumeText: resolvedText };
       }
+      setApplicantInput(body);
       const res = await fetch("/api/parse-applicant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -293,6 +327,27 @@ export default function Home() {
       setParseApplicantError("이력서 분석에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsParsingApplicant(false);
+    }
+  }
+
+  async function runSuggestResume(gapStacks: string[]) {
+    if (!applicantInput) return;
+    setIsSuggestingResume(true);
+    setSuggestionError(null);
+    setSuggestionResult(null);
+    try {
+      const res = await fetch("/api/suggest-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...applicantInput, gapStacks }),
+      });
+      if (!res.ok) throw new Error("suggest_failed");
+      const data: SuggestionResult = await res.json();
+      setSuggestionResult(data);
+    } catch {
+      setSuggestionError("이력서 재구성 제안에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSuggestingResume(false);
     }
   }
 
@@ -328,6 +383,9 @@ export default function Home() {
     setParseApplicantError(null);
     setJudgeResult(null);
     setJudgeError(null);
+    setApplicantInput(null);
+    setSuggestionResult(null);
+    setSuggestionError(null);
   }
 
   return (
@@ -587,6 +645,53 @@ export default function Home() {
                 </div>
               )}
             </div>
+
+            <div className="pt-4">
+              {!suggestionResult && (
+                <button
+                  type="button"
+                  onClick={() => runSuggestResume(matchResult.gap_stacks)}
+                  disabled={isSuggestingResume}
+                  className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {isSuggestingResume ? "재구성 제안 생성 중..." : "이력서 재구성 제안 보기"}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {suggestionError && (
+          <ErrorCard
+            message={suggestionError}
+            onRetry={() => {
+              if (matchResult) runSuggestResume(matchResult.gap_stacks);
+            }}
+          />
+        )}
+
+        {suggestionResult && improvedMatch && matchResult && (
+          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+              이력서 재구성 제안
+            </p>
+            <div className="mb-4 flex items-center gap-3 text-sm text-gray-700">
+              <span>
+                원본 <span className={`font-bold ${scoreColorClass(matchResult.score)}`}>
+                  {matchResult.score}%
+                </span>
+              </span>
+              <span>→</span>
+              <span>
+                개선 후{" "}
+                <span className={`font-bold ${scoreColorClass(improvedMatch.score)}`}>
+                  {improvedMatch.score}%
+                </span>
+              </span>
+            </div>
+            <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-xl bg-gray-50 p-4 text-sm text-gray-800">
+              {suggestionResult.resume_suggestion}
+            </pre>
           </div>
         )}
       </div>
