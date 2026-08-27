@@ -187,6 +187,30 @@ export default function Home() {
     ]);
   }, [parsedJob, parsedApplicant, suggestionResult]);
 
+  // 잠재 최대 점수: confirmed 여부와 무관하게 matchResult의 gap_stacks(최대 3개)를
+  // 전부 채웠다고 가정 — improvedMatch와 같은 병합 패턴, 대상만 다르다
+  const potentialMatch = useMemo(() => {
+    if (!parsedJob || !parsedApplicant || !matchResult || !suggestionResult) return null;
+    const allJobStacks = [...parsedJob.required_stacks, ...parsedJob.preferred_stacks];
+    const allGapStacks = matchResult.gap_stacks
+      .map((raw) => allJobStacks.find((stack) => stack.raw === raw))
+      .filter((stack): stack is CanonicalizedStack => stack !== undefined);
+    return calculateMatch(parsedJob.required_stacks, parsedJob.preferred_stacks, [
+      ...parsedApplicant.stacks,
+      ...allGapStacks,
+    ]);
+  }, [parsedJob, parsedApplicant, matchResult, suggestionResult]);
+
+  // 개선 제안서: gap_stacks 중 11에서 "원본에 없다"고 판정된(=confirmed_gap_stacks에
+  // 없는) 항목들 — resume_suggestion 생성에 애초에 입력으로 들어가지 않아 구조적으로
+  // 본문과 섞이지 않는다
+  const improvementSuggestions = useMemo(() => {
+    if (!matchResult || !suggestionResult) return null;
+    return matchResult.gap_stacks.filter(
+      (stack) => !suggestionResult.confirmed_gap_stacks.includes(stack)
+    );
+  }, [matchResult, suggestionResult]);
+
   useEffect(() => {
     // React 19이 XSS 방지 차원에서 javascript: href를 JSX 단계에서 무력화시켜서
     // (드래그해도 실제 스크립트 대신 에러가 복사됨) — ref로 DOM에 직접 설정해서 우회
@@ -670,12 +694,12 @@ export default function Home() {
           />
         )}
 
-        {suggestionResult && improvedMatch && matchResult && (
+        {suggestionResult && improvedMatch && potentialMatch && matchResult && (
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
               이력서 재구성 제안
             </p>
-            <div className="mb-4 flex items-center gap-3 text-sm text-gray-700">
+            <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-700">
               <span>
                 원본 <span className={`font-bold ${scoreColorClass(matchResult.score)}`}>
                   {matchResult.score}%
@@ -688,10 +712,38 @@ export default function Home() {
                   {improvedMatch.score}%
                 </span>
               </span>
+              <span>→</span>
+              <span>
+                잠재 최대{" "}
+                <span className={`font-bold ${scoreColorClass(potentialMatch.score)}`}>
+                  {potentialMatch.score}%
+                </span>
+              </span>
             </div>
             <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-xl bg-gray-50 p-4 text-sm text-gray-800">
               {suggestionResult.resume_suggestion}
             </pre>
+
+            <div className="mt-4 border-t border-gray-100 pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                개선 제안서
+              </p>
+              {!improvementSuggestions || improvementSuggestions.length === 0 ? (
+                <p className="text-sm text-gray-500">개선 제안 없음</p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {improvementSuggestions.map((stack) => (
+                    <li
+                      key={stack}
+                      className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-100"
+                    >
+                      <span className="font-semibold">{stack}</span> — 보유 여부는
+                      사용자가 직접 판단
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         )}
       </div>
