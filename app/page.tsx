@@ -65,6 +65,7 @@ interface ApplicantInput {
 interface SuggestionResult {
   resume_suggestion: string;
   confirmed_gap_stacks: string[];
+  interview_questions: string[];
 }
 
 function fileToBase64(file: File): Promise<string> {
@@ -354,7 +355,7 @@ export default function Home() {
     }
   }
 
-  async function runSuggestResume(gapStacks: string[]) {
+  async function runSuggestResume(gapStacks: string[], jobStacks: string[]) {
     if (!applicantInput) return;
     setIsSuggestingResume(true);
     setSuggestionError(null);
@@ -363,7 +364,7 @@ export default function Home() {
       const res = await fetch("/api/suggest-resume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...applicantInput, gapStacks }),
+        body: JSON.stringify({ ...applicantInput, gapStacks, jobStacks }),
       });
       if (!res.ok) throw new Error("suggest_failed");
       const data: SuggestionResult = await res.json();
@@ -674,7 +675,12 @@ export default function Home() {
               {!suggestionResult && (
                 <button
                   type="button"
-                  onClick={() => runSuggestResume(matchResult.gap_stacks)}
+                  onClick={() =>
+                    runSuggestResume(matchResult.gap_stacks, [
+                      ...parsedJob.required_stacks.map((s) => s.raw),
+                      ...parsedJob.preferred_stacks.map((s) => s.raw),
+                    ])
+                  }
                   disabled={isSuggestingResume}
                   className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
                 >
@@ -689,7 +695,12 @@ export default function Home() {
           <ErrorCard
             message={suggestionError}
             onRetry={() => {
-              if (matchResult) runSuggestResume(matchResult.gap_stacks);
+              if (matchResult && parsedJob) {
+                runSuggestResume(matchResult.gap_stacks, [
+                  ...parsedJob.required_stacks.map((s) => s.raw),
+                  ...parsedJob.preferred_stacks.map((s) => s.raw),
+                ]);
+              }
             }}
           />
         )}
@@ -743,6 +754,19 @@ export default function Home() {
                   ))}
                 </ul>
               )}
+            </div>
+
+            <div className="mt-4 border-t border-gray-100 pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                예상 기술면접 꼬리질문
+              </p>
+              <ol className="flex flex-col gap-2">
+                {suggestionResult.interview_questions.map((question, i) => (
+                  <li key={i} className="rounded-xl bg-indigo-50 p-3 text-sm text-indigo-900 ring-1 ring-indigo-100">
+                    {i + 1}. {question}
+                  </li>
+                ))}
+              </ol>
             </div>
           </div>
         )}

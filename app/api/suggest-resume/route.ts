@@ -13,15 +13,20 @@ const RESPONSE_SCHEMA = {
   properties: {
     resume_suggestion: { type: Type.STRING },
     confirmed_gap_stacks: { type: Type.ARRAY, items: { type: Type.STRING } },
+    interview_questions: { type: Type.ARRAY, items: { type: Type.STRING } },
   },
-  required: ["resume_suggestion", "confirmed_gap_stacks"],
+  required: ["resume_suggestion", "confirmed_gap_stacks", "interview_questions"],
 };
 
 const RULES = `Follow these rules exactly:
 - resume_suggestion: rewrite the resume text with ONLY reordering of sentences/paragraphs, rewording with synonyms, shifting emphasis, or rephrasing existing facts/numbers (e.g. "팀 프로젝트 참여" -> "5인 팀에서 백엔드 담당"). NEVER add a new fact, number, experience, project name, or technology/stack name that is not already present in the original document. Output in the same language as the original document.
-- confirmed_gap_stacks: you are given a list of "candidate stacks" the job posting needs. For each candidate, include it in this array ONLY IF that exact stack is already literally mentioned somewhere in the original document (even briefly, e.g. in a project description). If a candidate is not mentioned anywhere in the original document, do NOT include it. Never guess or assume presence. If none are confirmed, return an empty array.`;
+- confirmed_gap_stacks: you are given a list of "candidate stacks" the job posting needs. For each candidate, include it in this array ONLY IF that exact stack is already literally mentioned somewhere in the original document (even briefly, e.g. in a project description). If a candidate is not mentioned anywhere in the original document, do NOT include it. Never guess or assume presence. If none are confirmed, return an empty array.
+- interview_questions: generate EXACTLY 2 realistic technical interview follow-up questions, as an interviewer would ask after reading this resume alongside the job posting's required/preferred stacks. Each question MUST reference a specific project, experience, or technology that is literally mentioned in the original document — do not invent scenarios or reference anything not in the document. Output in the same language as the original document.`;
 
-const TEXT_PROMPT = `You are helping rewrite a resume/application document and checking which candidate stacks it already mentions. ${RULES}
+const TEXT_PROMPT = `You are helping rewrite a resume/application document, checking which candidate stacks it already mentions, and drafting interview follow-up questions. ${RULES}
+
+Job posting's required/preferred stacks (for interview question relevance):
+{{JOB_STACKS}}
 
 Candidate stacks to check:
 {{CANDIDATE_STACKS}}
@@ -31,7 +36,10 @@ Document:
 {{RESUME_TEXT}}
 """`;
 
-const FILE_PROMPT = `You are helping rewrite a resume/application document (attached as a file) and checking which candidate stacks it already mentions. ${RULES}
+const FILE_PROMPT = `You are helping rewrite a resume/application document (attached as a file), checking which candidate stacks it already mentions, and drafting interview follow-up questions. ${RULES}
+
+Job posting's required/preferred stacks (for interview question relevance):
+{{JOB_STACKS}}
 
 Candidate stacks to check:
 {{CANDIDATE_STACKS}}`;
@@ -39,13 +47,15 @@ Candidate stacks to check:
 interface GeminiSuggestionOutput {
   resume_suggestion: string;
   confirmed_gap_stacks: string[];
+  interview_questions: string[];
 }
 
 export async function POST(request: Request) {
-  const { resumeText, resumeFile, gapStacks } = (await request.json()) as {
+  const { resumeText, resumeFile, gapStacks, jobStacks } = (await request.json()) as {
     resumeText?: string;
     resumeFile?: { dataBase64: string; mimeType: string };
     gapStacks?: string[];
+    jobStacks?: string[];
   };
 
   if (resumeFile && resumeFile.dataBase64.length > (MAX_FILE_SIZE * 4) / 3) {
@@ -56,6 +66,7 @@ export async function POST(request: Request) {
   }
 
   const candidateStacksText = (gapStacks ?? []).join(", ") || "(none)";
+  const jobStacksText = (jobStacks ?? []).join(", ") || "(none)";
 
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -65,7 +76,10 @@ export async function POST(request: Request) {
             role: "user",
             parts: [
               {
-                text: FILE_PROMPT.replace("{{CANDIDATE_STACKS}}", candidateStacksText),
+                text: FILE_PROMPT.replace("{{CANDIDATE_STACKS}}", candidateStacksText).replace(
+                  "{{JOB_STACKS}}",
+                  jobStacksText
+                ),
               },
               {
                 inlineData: {
@@ -76,10 +90,9 @@ export async function POST(request: Request) {
             ],
           },
         ]
-      : TEXT_PROMPT.replace("{{CANDIDATE_STACKS}}", candidateStacksText).replace(
-          "{{RESUME_TEXT}}",
-          resumeText as string
-        );
+      : TEXT_PROMPT.replace("{{CANDIDATE_STACKS}}", candidateStacksText)
+          .replace("{{JOB_STACKS}}", jobStacksText)
+          .replace("{{RESUME_TEXT}}", resumeText as string);
 
     const result = await retryOnce(async () => {
       const response = await ai.models.generateContent({
