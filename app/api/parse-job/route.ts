@@ -1,6 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { NextResponse } from "next/server";
 import { canonicalizeStacks, type CanonicalizedStack } from "@/lib/canonicalize-stacks";
+import { retryOnce } from "@/lib/retry-once";
+import { reportFailure } from "@/lib/report-failure";
 
 export const maxDuration = 30;
 
@@ -62,16 +64,18 @@ export async function POST(request: Request) {
 
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: PROMPT.replace("{{JD_TEXT}}", jdText),
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: RESPONSE_SCHEMA,
-      },
+    const parsed = await retryOnce(async () => {
+      const response = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: PROMPT.replace("{{JD_TEXT}}", jdText),
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: RESPONSE_SCHEMA,
+        },
+      });
+      return JSON.parse(response.text ?? "") as GeminiJobOutput;
     });
 
-    const parsed: GeminiJobOutput = JSON.parse(response.text ?? "");
     const [required_stacks, preferred_stacks] = await Promise.all([
       canonicalizeStacks(parsed.required_stacks),
       canonicalizeStacks(parsed.preferred_stacks),
@@ -83,7 +87,8 @@ export async function POST(request: Request) {
       preferred_stacks,
     };
     return NextResponse.json(result);
-  } catch {
+  } catch (error) {
+    await reportFailure(jdText, error);
     return NextResponse.json({ error: "parse_failed" }, { status: 500 });
   }
 }

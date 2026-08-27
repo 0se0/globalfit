@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { runJudgeAgent, type JudgeResult } from "@/lib/judge-agent";
 import { shouldRunJudgeAgent } from "@/lib/should-run-judge-agent";
 import type { ParsedJob } from "@/app/api/parse-job/route";
+import { retryOnce } from "@/lib/retry-once";
+import { reportFailure } from "@/lib/report-failure";
 
 export const maxDuration = 60;
 
@@ -29,9 +31,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await runJudgeAgent(jdText, parsedJob);
+    const result = await retryOnce(() => runJudgeAgent(jdText, parsedJob));
     return NextResponse.json(result);
-  } catch {
+  } catch (error) {
+    await reportFailure(jdText, error);
     return NextResponse.json({ error: "judge_failed" }, { status: 500 });
   }
 }

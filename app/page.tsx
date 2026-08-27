@@ -109,6 +109,21 @@ function isPdfFile(resumeFile: ResumeFile): boolean {
   );
 }
 
+function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800 shadow-sm">
+      <p className="mb-3">{message}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="rounded-lg bg-red-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-red-700"
+      >
+        다시 시도
+      </button>
+    </div>
+  );
+}
+
 export default function Home() {
   const [jdText, setJdText] = useState("");
   const [resumeText, setResumeText] = useState("");
@@ -206,6 +221,81 @@ export default function Home() {
     setResumeFile(null);
   }
 
+  async function runJudgeJob(text: string, parsedJobData: ParsedJob) {
+    setIsJudgingJob(true);
+    setJudgeError(null);
+    try {
+      const judgeRes = await fetch("/api/judge-job", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jdText: text, parsedJob: parsedJobData }),
+      });
+      if (!judgeRes.ok) throw new Error("judge_failed");
+      const judgeData: JudgeResult = await judgeRes.json();
+      setJudgeResult(judgeData);
+    } catch {
+      setJudgeError("판단 지점 분석에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsJudgingJob(false);
+    }
+  }
+
+  async function runParseJob(text: string) {
+    setIsParsingJob(true);
+    setParseJobError(null);
+    setParsedJob(null);
+    setIsJudgingJob(false);
+    setJudgeResult(null);
+    setJudgeError(null);
+    try {
+      const res = await fetch("/api/parse-job", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jdText: text }),
+      });
+      if (!res.ok) throw new Error("parse_failed");
+      const data: ParsedJob = await res.json();
+      setParsedJob(data);
+      setIsParsingJob(false);
+      await runJudgeJob(text, data);
+    } catch {
+      setParseJobError("공고 분석에 실패했습니다. 다시 시도해주세요.");
+      setIsParsingJob(false);
+    }
+  }
+
+  async function runParseApplicant(text: string, file: ResumeFile | null) {
+    setIsParsingApplicant(true);
+    setParseApplicantError(null);
+    setParsedApplicant(null);
+    try {
+      let body: { resumeText?: string; resumeFile?: { dataBase64: string; mimeType: string } };
+      if (file && isPdfFile(file)) {
+        body = {
+          resumeFile: {
+            dataBase64: file.dataBase64,
+            mimeType: file.type || "application/pdf",
+          },
+        };
+      } else {
+        const resolvedText = file ? await extractResumeFileText(file) : text;
+        body = { resumeText: resolvedText };
+      }
+      const res = await fetch("/api/parse-applicant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("parse_failed");
+      const data: ParsedApplicant = await res.json();
+      setParsedApplicant(data);
+    } catch {
+      setParseApplicantError("이력서 분석에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsParsingApplicant(false);
+    }
+  }
+
   async function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
     if (isBlocked) return;
@@ -218,80 +308,10 @@ export default function Home() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
     setSavedEntry(entry);
 
-    setIsParsingJob(true);
-    setParseJobError(null);
-    setParsedJob(null);
-    setIsJudgingJob(false);
-    setJudgeResult(null);
-    setJudgeError(null);
-    const parseJobPromise = (async () => {
-      try {
-        const res = await fetch("/api/parse-job", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jdText }),
-        });
-        if (!res.ok) throw new Error("parse_failed");
-        const data: ParsedJob = await res.json();
-        setParsedJob(data);
-        setIsParsingJob(false);
-
-        setIsJudgingJob(true);
-        try {
-          const judgeRes = await fetch("/api/judge-job", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ jdText, parsedJob: data }),
-          });
-          if (!judgeRes.ok) throw new Error("judge_failed");
-          const judgeData: JudgeResult = await judgeRes.json();
-          setJudgeResult(judgeData);
-        } catch {
-          setJudgeError("판단 지점 분석에 실패했습니다. 다시 시도해주세요.");
-        } finally {
-          setIsJudgingJob(false);
-        }
-      } catch {
-        setParseJobError("공고 분석에 실패했습니다. 다시 시도해주세요.");
-        setIsParsingJob(false);
-      }
-    })();
-
-    setIsParsingApplicant(true);
-    setParseApplicantError(null);
-    setParsedApplicant(null);
-    const parseApplicantPromise = (async () => {
-      try {
-        let body: { resumeText?: string; resumeFile?: { dataBase64: string; mimeType: string } };
-        if (resumeFile && isPdfFile(resumeFile)) {
-          body = {
-            resumeFile: {
-              dataBase64: resumeFile.dataBase64,
-              mimeType: resumeFile.type || "application/pdf",
-            },
-          };
-        } else {
-          const text = resumeFile
-            ? await extractResumeFileText(resumeFile)
-            : resumeText;
-          body = { resumeText: text };
-        }
-        const res = await fetch("/api/parse-applicant", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        if (!res.ok) throw new Error("parse_failed");
-        const data: ParsedApplicant = await res.json();
-        setParsedApplicant(data);
-      } catch {
-        setParseApplicantError("이력서 분석에 실패했습니다. 다시 시도해주세요.");
-      } finally {
-        setIsParsingApplicant(false);
-      }
-    })();
-
-    await Promise.all([parseJobPromise, parseApplicantPromise]);
+    await Promise.all([
+      runParseJob(jdText),
+      runParseApplicant(resumeText, resumeFile),
+    ]);
   }
 
   function handleReset() {
@@ -458,13 +478,18 @@ export default function Home() {
           </div>
         )}
 
-        {(isParsingJob || parsedJob || parseJobError) && (
+        {parseJobError && (
+          <ErrorCard
+            message={parseJobError}
+            onRetry={() => runParseJob(jdText)}
+          />
+        )}
+        {(isParsingJob || parsedJob) && !parseJobError && (
           <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
             <p className="mb-2 text-xs font-medium text-gray-400">
               공고 분석 결과 (디버그용 — 매칭 점수/gap은 아래 결과 카드 참고)
             </p>
             {isParsingJob && <p className="text-gray-500">분석 중...</p>}
-            {parseJobError && <p className="text-red-600">{parseJobError}</p>}
             {parsedJob && (
               <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
                 {JSON.stringify(parsedJob, null, 2)}
@@ -473,15 +498,18 @@ export default function Home() {
           </div>
         )}
 
-        {(isParsingApplicant || parsedApplicant || parseApplicantError) && (
+        {parseApplicantError && (
+          <ErrorCard
+            message={parseApplicantError}
+            onRetry={() => runParseApplicant(resumeText, resumeFile)}
+          />
+        )}
+        {(isParsingApplicant || parsedApplicant) && !parseApplicantError && (
           <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
             <p className="mb-2 text-xs font-medium text-gray-400">
               이력서 분석 결과 (디버그용)
             </p>
             {isParsingApplicant && <p className="text-gray-500">분석 중...</p>}
-            {parseApplicantError && (
-              <p className="text-red-600">{parseApplicantError}</p>
-            )}
             {parsedApplicant && (
               <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
                 {JSON.stringify(parsedApplicant, null, 2)}
@@ -490,13 +518,20 @@ export default function Home() {
           </div>
         )}
 
-        {(isJudgingJob || judgeResult || judgeError) && (
+        {judgeError && (
+          <ErrorCard
+            message={judgeError}
+            onRetry={() => {
+              if (parsedJob) runJudgeJob(jdText, parsedJob);
+            }}
+          />
+        )}
+        {(isJudgingJob || judgeResult) && !judgeError && (
           <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
             <p className="mb-2 text-xs font-medium text-gray-400">
               판단 지점 에이전트 결과 (디버그용)
             </p>
             {isJudgingJob && <p className="text-gray-500">분석 중...</p>}
-            {judgeError && <p className="text-red-600">{judgeError}</p>}
             {judgeResult && (
               <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
                 {JSON.stringify(judgeResult, null, 2)}

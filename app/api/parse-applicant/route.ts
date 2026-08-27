@@ -1,6 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { NextResponse } from "next/server";
 import { canonicalizeStacks, type CanonicalizedStack } from "@/lib/canonicalize-stacks";
+import { retryOnce } from "@/lib/retry-once";
+import { reportFailure } from "@/lib/report-failure";
 
 export const maxDuration = 30;
 
@@ -82,21 +84,24 @@ export async function POST(request: Request) {
         ]
       : TEXT_PROMPT.replace("{{RESUME_TEXT}}", resumeText as string);
 
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL,
-      contents,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: RESPONSE_SCHEMA,
-      },
+    const parsed = await retryOnce(async () => {
+      const response = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: RESPONSE_SCHEMA,
+        },
+      });
+      return JSON.parse(response.text ?? "") as GeminiApplicantOutput;
     });
 
-    const parsed: GeminiApplicantOutput = JSON.parse(response.text ?? "");
     const stacks = await canonicalizeStacks(parsed.stacks);
 
     const result: ParsedApplicant = { ...parsed, stacks };
     return NextResponse.json(result);
-  } catch {
+  } catch (error) {
+    await reportFailure(resumeText ?? `[file] ${resumeFile?.mimeType ?? ""}`, error);
     return NextResponse.json({ error: "parse_failed" }, { status: 500 });
   }
 }
