@@ -1,0 +1,12 @@
+Software Engineer — Anonymous Startup
+
+We are looking for a software engineer with experience in Python and cloud
+infrastructure.
+
+Requirements:
+- 2+ years of professional experience
+- Proficiency in Python
+- Familiarity with cloud platforms
+
+Nice to have:
+- Experience with Kubernetes

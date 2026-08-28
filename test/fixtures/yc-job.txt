@@ -1,0 +1,16 @@
+Backend Engineer — Nimbus Freight (YC S24)
+
+We're a Y Combinator-backed logistics startup building real-time freight
+tracking infrastructure for mid-size carriers.
+
+Requirements:
+- 3+ years of experience building production backend services
+- Strong experience with React, Node.js, and PostgreSQL
+- Comfortable working in a fast-paced startup environment
+
+Nice to have:
+- Experience with Docker and AWS
+
+How to apply:
+Please apply through our careers page at https://nimbusfreight.example/careers.
+Do not email us directly — applications sent by email will not be reviewed.
