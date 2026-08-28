@@ -54,15 +54,21 @@ vi.mock("@google/genai", () => {
             "You are helping rewrite a resume/application document, checking which candidate stacks"
           )
         ) {
-          // 자소서 텍스트가 프롬프트에 포함된 경우에만 cover_letter_suggestion을
-          // 채운다 — 실제 라우트도 자소서 없으면 빈 문자열을 반환하도록 설계됨
+          // 자소서/포트폴리오 텍스트가 프롬프트에 포함된 경우에만 각 suggestion을
+          // 채운다 — 실제 라우트도 입력 없으면 빈 문자열을 반환하도록 설계됨
           const hasCoverLetter = contents.includes("귀사의 물류 자동화 서비스에");
+          const hasPortfolio = contents.includes(
+            "담당: 프론트엔드 UI 및 주문 데이터베이스 스키마 설계"
+          );
           return {
             text: JSON.stringify({
               resume_suggestion:
                 "홍길동\n\n경력\n- ABC테크 백엔드 개발자로 2년간 React 기반 대시보드와 PostgreSQL 주문 데이터베이스를 운영했으며, Node.js로 결제 배치 스크립트도 일부 작성했습니다.\n\n프로젝트\n- 사내 물류 추적 시스템을 React와 PostgreSQL로 리뉴얼했습니다.",
               cover_letter_suggestion: hasCoverLetter
                 ? "ABC테크에서 2년간 백엔드 개발자로 근무하며 React 대시보드와 PostgreSQL 주문 데이터베이스를 함께 다뤄왔습니다. 물류 데이터를 실시간으로 추적하는 프로젝트 리뉴얼을 통해 사용자 경험과 데이터 정합성을 동시에 고려하는 역량을 길렀고, 이를 바탕으로 귀사의 물류 자동화 서비스에 기여하고 싶습니다."
+                : "",
+              portfolio_suggestion: hasPortfolio
+                ? "1. 사내 물류 추적 시스템 리뉴얼 — React, PostgreSQL 기반 실시간 배송 현황 대시보드 개발, 프론트엔드 UI 및 주문 데이터베이스 스키마 설계 담당\n2. 결제 배치 처리 스크립트 — Node.js로 야간 배치 결제 정산 스크립트 작성 및 운영"
                 : "",
               // Node.js는 원본 문서에 실제로 언급되어 있어 confirmed, Docker/AWS는
               // 원본 어디에도 없어 confirmed하지 않음 (개선 제안서 전용 항목이 됨)
@@ -134,6 +140,7 @@ interface ParsedApplicantResult {
 interface SuggestionResult {
   resume_suggestion: string;
   cover_letter_suggestion: string;
+  portfolio_suggestion: string;
   confirmed_gap_stacks: string[];
   interview_questions: string[];
 }
@@ -148,6 +155,7 @@ interface AnalysisResult {
   improvement_suggestions: string[];
   resume_suggestion: string;
   cover_letter_suggestion: string;
+  portfolio_suggestion: string;
 }
 
 // app/page.tsx의 오케스트레이션(parse-job → parse-applicant → calculateMatch →
@@ -157,7 +165,8 @@ interface AnalysisResult {
 async function runAnalysisPipeline(
   jdText: string,
   resumeText: string,
-  coverLetterText?: string
+  coverLetterText?: string,
+  portfolioText?: string
 ): Promise<AnalysisResult> {
   const parsedJob = await callRoute<ParsedJobResult>(parseJob, { jdText });
   const parsedApplicant = await callRoute<ParsedApplicantResult>(parseApplicant, {
@@ -178,6 +187,7 @@ async function runAnalysisPipeline(
   const suggestionResult = await callRoute<SuggestionResult>(suggestResume, {
     resumeText,
     coverLetterText,
+    portfolioText,
     gapStacks: matchResult.gap_stacks,
     jobStacks: allJobStacks.map((stack) => stack.raw),
   });
@@ -212,6 +222,7 @@ async function runAnalysisPipeline(
     improvement_suggestions: improvementSuggestions,
     resume_suggestion: suggestionResult.resume_suggestion,
     cover_letter_suggestion: suggestionResult.cover_letter_suggestion,
+    portfolio_suggestion: suggestionResult.portfolio_suggestion,
   };
 }
 
@@ -220,10 +231,11 @@ describe("GlobalFit e2e", () => {
     const jdText = readFixture("yc-job.txt");
     const resumeText = readFixture("resume-ko.txt");
     const coverLetterText = readFixture("cover-letter-ko.txt");
+    const portfolioText = readFixture("portfolio-ko.txt");
 
     console.time("globalfit-e2e");
     const start = performance.now();
-    const result = await runAnalysisPipeline(jdText, resumeText, coverLetterText);
+    const result = await runAnalysisPipeline(jdText, resumeText, coverLetterText, portfolioText);
     const elapsedMs = performance.now() - start;
     console.timeEnd("globalfit-e2e");
 
@@ -247,24 +259,28 @@ describe("GlobalFit e2e", () => {
     expect(result.improved_score).toBeLessThan(result.potential_score);
 
     // 개선 제안서(improvement_suggestions)에만 있는 갭 항목 텍스트는
-    // resume_suggestion, cover_letter_suggestion 본문 어디에도 포함되면 안 됨
+    // resume_suggestion, cover_letter_suggestion, portfolio_suggestion 본문
+    // 어디에도 포함되면 안 됨
     expect(result.improvement_suggestions.length).toBeGreaterThan(0);
     for (const stack of result.improvement_suggestions) {
       expect(result.resume_suggestion).not.toContain(stack);
       expect(result.cover_letter_suggestion).not.toContain(stack);
+      expect(result.portfolio_suggestion).not.toContain(stack);
     }
 
-    // 자소서를 입력했으므로 cover_letter_suggestion이 비어있지 않아야 함
+    // 자소서/포트폴리오를 입력했으므로 각 suggestion이 비어있지 않아야 함
     expect(result.cover_letter_suggestion.trim().length).toBeGreaterThan(0);
+    expect(result.portfolio_suggestion.trim().length).toBeGreaterThan(0);
   });
 
-  it("자소서를 입력하지 않으면 cover_letter_suggestion이 빈 문자열로 반환된다", async () => {
+  it("자소서/포트폴리오를 입력하지 않으면 각 suggestion이 빈 문자열로 반환된다", async () => {
     const jdText = readFixture("yc-job.txt");
     const resumeText = readFixture("resume-ko.txt");
 
     const result = await runAnalysisPipeline(jdText, resumeText);
 
     expect(result.cover_letter_suggestion).toBe("");
+    expect(result.portfolio_suggestion).toBe("");
   });
 
   it("job-no-submission-method.txt는 submission_method가 'unclear'로 반환된다", async () => {

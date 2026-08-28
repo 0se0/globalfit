@@ -27,6 +27,7 @@ interface SavedEntry {
   resumeText: string;
   resumeFile: ResumeFile | null;
   coverLetterText: string;
+  portfolioText: string;
   savedAt: string;
 }
 
@@ -66,6 +67,7 @@ interface ApplicantInput {
 interface SuggestionResult {
   resume_suggestion: string;
   cover_letter_suggestion: string;
+  portfolio_suggestion: string;
   confirmed_gap_stacks: string[];
   interview_questions: string[];
 }
@@ -253,6 +255,7 @@ export default function Home() {
   const [resumeText, setResumeText] = useState("");
   const [resumeFile, setResumeFile] = useState<ResumeFile | null>(null);
   const [coverLetterText, setCoverLetterText] = useState("");
+  const [portfolioText, setPortfolioText] = useState("");
   const [savedEntry, setSavedEntry] = useState<SavedEntry | null>(null);
   const [isFetchingUrl, setIsFetchingUrl] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -348,6 +351,7 @@ export default function Home() {
     setResumeText(entry.resumeText);
     setResumeFile(entry.resumeFile ?? null);
     setCoverLetterText(entry.coverLetterText ?? "");
+    setPortfolioText(entry.portfolioText ?? "");
     setSavedEntry(entry);
   }, []);
 
@@ -487,6 +491,7 @@ export default function Home() {
         body: JSON.stringify({
           ...applicantInput,
           coverLetterText: coverLetterText.trim() || undefined,
+          portfolioText: portfolioText.trim() || undefined,
           gapStacks,
           jobStacks,
         }),
@@ -542,6 +547,7 @@ export default function Home() {
       resumeText,
       resumeFile,
       coverLetterText,
+      portfolioText,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
@@ -559,6 +565,7 @@ export default function Home() {
     setResumeText("");
     setResumeFile(null);
     setCoverLetterText("");
+    setPortfolioText("");
     setSavedEntry(null);
     setFetchError(null);
     setFileError(null);
@@ -895,6 +902,22 @@ export default function Home() {
             />
           </div>
 
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="portfolio"
+              className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+            >
+              포트폴리오 (선택)
+            </label>
+            <textarea
+              id="portfolio"
+              value={portfolioText}
+              onChange={(e) => setPortfolioText(e.target.value)}
+              placeholder="포트폴리오 텍스트 (프로젝트 목록 등 — 입력하면 프로젝트 우선순위 재정렬 제안도 함께 포함됩니다)"
+              className="min-h-24 rounded-xl border border-gray-200 p-3.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            />
+          </div>
+
           {!isJdUrl && isEmpty && (
             <p className="text-sm text-red-600">
               공고와 이력서를 모두 입력해 주세요.
@@ -955,6 +978,12 @@ export default function Home() {
               <p>
                 <span className="font-semibold">자소서:</span>{" "}
                 {savedEntry.coverLetterText.slice(0, 30)}
+              </p>
+            )}
+            {savedEntry.portfolioText && (
+              <p>
+                <span className="font-semibold">포트폴리오:</span>{" "}
+                {savedEntry.portfolioText.slice(0, 30)}
               </p>
             )}
           </div>
@@ -1141,6 +1170,17 @@ export default function Home() {
                 </p>
                 <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-xl bg-gray-50 p-4 text-sm text-gray-800">
                   {suggestionResult.cover_letter_suggestion}
+                </pre>
+              </div>
+            )}
+
+            {portfolioText.trim() && suggestionResult.portfolio_suggestion.trim() && (
+              <div className="mt-4 border-t border-gray-100 pt-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                  포트폴리오 재구성 제안
+                </p>
+                <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-xl bg-gray-50 p-4 text-sm text-gray-800">
+                  {suggestionResult.portfolio_suggestion}
                 </pre>
               </div>
             )}
