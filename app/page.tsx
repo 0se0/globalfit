@@ -26,6 +26,7 @@ interface SavedEntry {
   jdText: string;
   resumeText: string;
   resumeFile: ResumeFile | null;
+  coverLetterText: string;
   savedAt: string;
 }
 
@@ -64,6 +65,7 @@ interface ApplicantInput {
 
 interface SuggestionResult {
   resume_suggestion: string;
+  cover_letter_suggestion: string;
   confirmed_gap_stacks: string[];
   interview_questions: string[];
 }
@@ -250,6 +252,7 @@ export default function Home() {
   const [jdText, setJdText] = useState("");
   const [resumeText, setResumeText] = useState("");
   const [resumeFile, setResumeFile] = useState<ResumeFile | null>(null);
+  const [coverLetterText, setCoverLetterText] = useState("");
   const [savedEntry, setSavedEntry] = useState<SavedEntry | null>(null);
   const [isFetchingUrl, setIsFetchingUrl] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -344,6 +347,7 @@ export default function Home() {
     setJdText(entry.jdText);
     setResumeText(entry.resumeText);
     setResumeFile(entry.resumeFile ?? null);
+    setCoverLetterText(entry.coverLetterText ?? "");
     setSavedEntry(entry);
   }, []);
 
@@ -480,7 +484,12 @@ export default function Home() {
       const res = await fetch("/api/suggest-resume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...applicantInput, gapStacks, jobStacks }),
+        body: JSON.stringify({
+          ...applicantInput,
+          coverLetterText: coverLetterText.trim() || undefined,
+          gapStacks,
+          jobStacks,
+        }),
       });
       if (!res.ok) throw new Error("suggest_failed");
       const data: SuggestionResult = await res.json();
@@ -532,6 +541,7 @@ export default function Home() {
       jdText,
       resumeText,
       resumeFile,
+      coverLetterText,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
@@ -548,6 +558,7 @@ export default function Home() {
     setJdText("");
     setResumeText("");
     setResumeFile(null);
+    setCoverLetterText("");
     setSavedEntry(null);
     setFetchError(null);
     setFileError(null);
@@ -868,6 +879,22 @@ export default function Home() {
             {fileError && <p className="text-sm text-red-600">{fileError}</p>}
           </div>
 
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="coverLetter"
+              className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+            >
+              자소서 (선택)
+            </label>
+            <textarea
+              id="coverLetter"
+              value={coverLetterText}
+              onChange={(e) => setCoverLetterText(e.target.value)}
+              placeholder="자소서 텍스트 (입력하면 이력서 재구성 제안에 자소서 재구성도 함께 포함됩니다)"
+              className="min-h-24 rounded-xl border border-gray-200 p-3.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            />
+          </div>
+
           {!isJdUrl && isEmpty && (
             <p className="text-sm text-red-600">
               공고와 이력서를 모두 입력해 주세요.
@@ -924,6 +951,12 @@ export default function Home() {
                 ? `📎 ${savedEntry.resumeFile.name}`
                 : savedEntry.resumeText.slice(0, 30)}
             </p>
+            {savedEntry.coverLetterText && (
+              <p>
+                <span className="font-semibold">자소서:</span>{" "}
+                {savedEntry.coverLetterText.slice(0, 30)}
+              </p>
+            )}
           </div>
         )}
 
@@ -1100,6 +1133,17 @@ export default function Home() {
             <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-xl bg-gray-50 p-4 text-sm text-gray-800">
               {suggestionResult.resume_suggestion}
             </pre>
+
+            {coverLetterText.trim() && suggestionResult.cover_letter_suggestion.trim() && (
+              <div className="mt-4 border-t border-gray-100 pt-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                  자소서 재구성 제안
+                </p>
+                <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-xl bg-gray-50 p-4 text-sm text-gray-800">
+                  {suggestionResult.cover_letter_suggestion}
+                </pre>
+              </div>
+            )}
 
             <div className="mt-4 border-t border-gray-100 pt-4">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
