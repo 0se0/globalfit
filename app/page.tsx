@@ -243,6 +243,7 @@ export default function Home() {
   const [companyReport, setCompanyReport] = useState<CompanyReport | null>(null);
   const [companyError, setCompanyError] = useState<string | null>(null);
   const [companyFetchWarning, setCompanyFetchWarning] = useState<string | null>(null);
+  const [view, setView] = useState<"company" | "matching">("company");
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
   const isEmpty = !jdText.trim() || (!resumeText.trim() && !resumeFile);
   // 매칭 점수는 기업분석을 먼저 완료해야만 확인할 수 있다 (2026-08-29 결정) —
@@ -489,7 +490,7 @@ export default function Home() {
     if (!companyName.trim()) return;
     const urls = parseCompanyUrls(companyUrlsText);
     if (urls.length === 0) {
-      setCompanyError("회사 관련 URL을 최소 1개 입력해주세요 (홈페이지, 채용공고, 뉴스 기사 등).");
+      setCompanyError("회사 관련 URL을 최소 1개 입력해주세요 (회사 홈페이지, 보도자료, 뉴스 기사 등).");
       return;
     }
     setIsAnalyzingCompany(true);
@@ -617,6 +618,8 @@ export default function Home() {
             </p>
           </div>
 
+          {view === "company" && (
+          <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-3.5 rounded-xl border border-line bg-white p-5">
             <div className="flex items-baseline justify-between">
               <span className="font-outfit text-[11px] uppercase tracking-[.14em] text-muted">
@@ -675,11 +678,12 @@ export default function Home() {
                   setCompanyError(null);
                   setCompanyFetchWarning(null);
                 }}
-                placeholder={"예:\nhttps://company.com\nhttps://company.com/careers\nhttps://news.site/article"}
+                placeholder={"예:\nhttps://company.com (회사 홈페이지)\nhttps://company.com/news (보도자료)\nhttps://news.site/article (뉴스 기사)"}
                 className="min-h-24 rounded-[9px] border border-line p-3 text-sm leading-relaxed outline-none transition focus:border-deepgreen"
               />
               <span className="text-xs text-muted">
-                회사 홈페이지·채용공고·뉴스 기사 등의 URL을 서버가 직접 가져와 분석 자료로 씁니다.
+                회사 소개·최근 뉴스 등 회사 전반에 대한 URL을 서버가 직접 가져와 분석 자료로
+                씁니다. 지금 지원하는 공고 자체는 다음 단계(STEP 01)에서 따로 입력해요.
               </span>
             </div>
             <button
@@ -701,68 +705,6 @@ export default function Home() {
           {companyError && (
             <ErrorCard message={companyError} onRetry={handleAnalyzeCompany} />
           )}
-
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <div className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
-            <div className="flex items-baseline justify-between">
-              <span className="font-outfit text-[11px] uppercase tracking-[.14em] text-muted">
-                STEP 01 — 채용공고
-              </span>
-              {jdText.trim() && !isJdUrl && (
-                <span className="text-xs font-semibold text-deepgreen">입력 완료</span>
-              )}
-            </div>
-            <textarea
-              id="jd"
-              value={jdText}
-              onChange={(e) => {
-                setJdText(e.target.value);
-                setFetchError(null);
-              }}
-              disabled={isFetchingUrl}
-              placeholder="공고 본문을 붙여넣거나 공고 URL을 넣어주세요"
-              className="min-h-32 rounded-[9px] border border-line p-3 text-sm leading-relaxed outline-none transition focus:border-deepgreen disabled:bg-surface-alt disabled:text-muted"
-            />
-            {isJdUrl && (
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={handleFetchUrl}
-                  disabled={isFetchingUrl}
-                  className="self-start rounded-[9px] border border-lime bg-lime px-4 py-2 text-sm font-semibold text-ink transition hover:brightness-95 disabled:cursor-not-allowed disabled:border-line disabled:bg-disabled-bg disabled:text-disabled-text"
-                >
-                  {isFetchingUrl ? "가져오는 중..." : "URL에서 가져오기"}
-                </button>
-                {fetchError && (
-                  <div className="flex flex-col gap-2 rounded-[9px] border border-alertwash-line bg-alertwash p-3.5">
-                    <p className="text-[13px] font-semibold text-alert">
-                      이 URL에서 공고를 가져오지 못했습니다
-                    </p>
-                    <p className="text-[13px] leading-relaxed">{fetchError}</p>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={handleFetchUrl}
-                        className="rounded-[8px] border border-lime bg-lime px-3 py-1.5 text-xs font-semibold text-ink"
-                      >
-                        다시 시도
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setJdText("");
-                          setFetchError(null);
-                        }}
-                        className="rounded-[8px] border border-line bg-white px-3 py-1.5 text-xs font-medium"
-                      >
-                        직접 붙여넣기
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
 
           {companyReport && (
             <div className="flex flex-col gap-5 rounded-xl border border-line bg-white p-5">
@@ -939,6 +881,90 @@ export default function Home() {
             </div>
           )}
 
+          {companyReport && (
+            <button
+              type="button"
+              onClick={() => setView("matching")}
+              className="self-start rounded-[9px] border border-lime bg-lime px-5 py-2.5 text-sm font-semibold text-ink transition hover:brightness-95"
+            >
+              다음: 공고·이력서 입력하기 →
+            </button>
+          )}
+          </div>
+          )}
+
+          {view === "matching" && (
+          <div className="flex flex-col gap-5">
+          <button
+            type="button"
+            onClick={() => setView("company")}
+            className="self-start text-[13px] text-muted underline"
+          >
+            ← 기업분석으로 돌아가기
+          </button>
+
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
+            <div className="flex items-baseline justify-between">
+              <span className="font-outfit text-[11px] uppercase tracking-[.14em] text-muted">
+                STEP 01 — 채용공고
+              </span>
+              {jdText.trim() && !isJdUrl && (
+                <span className="text-xs font-semibold text-deepgreen">입력 완료</span>
+              )}
+            </div>
+            <textarea
+              id="jd"
+              value={jdText}
+              onChange={(e) => {
+                setJdText(e.target.value);
+                setFetchError(null);
+              }}
+              disabled={isFetchingUrl}
+              placeholder="공고 본문을 붙여넣거나 공고 URL을 넣어주세요"
+              className="min-h-32 rounded-[9px] border border-line p-3 text-sm leading-relaxed outline-none transition focus:border-deepgreen disabled:bg-surface-alt disabled:text-muted"
+            />
+            {isJdUrl && (
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={handleFetchUrl}
+                  disabled={isFetchingUrl}
+                  className="self-start rounded-[9px] border border-lime bg-lime px-4 py-2 text-sm font-semibold text-ink transition hover:brightness-95 disabled:cursor-not-allowed disabled:border-line disabled:bg-disabled-bg disabled:text-disabled-text"
+                >
+                  {isFetchingUrl ? "가져오는 중..." : "URL에서 가져오기"}
+                </button>
+                {fetchError && (
+                  <div className="flex flex-col gap-2 rounded-[9px] border border-alertwash-line bg-alertwash p-3.5">
+                    <p className="text-[13px] font-semibold text-alert">
+                      이 URL에서 공고를 가져오지 못했습니다
+                    </p>
+                    <p className="text-[13px] leading-relaxed">{fetchError}</p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleFetchUrl}
+                        className="rounded-[8px] border border-lime bg-lime px-3 py-1.5 text-xs font-semibold text-ink"
+                      >
+                        다시 시도
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setJdText("");
+                          setFetchError(null);
+                        }}
+                        className="rounded-[8px] border border-line bg-white px-3 py-1.5 text-xs font-medium"
+                      >
+                        직접 붙여넣기
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
             <div className="flex items-baseline justify-between">
               <span className="font-outfit text-[11px] uppercase tracking-[.14em] text-muted">
@@ -1040,6 +1066,8 @@ export default function Home() {
               매칭 결과 보기
             </button>
           </div>
+          </div>
+          )}
         </form>
 
         <button
@@ -1050,6 +1078,8 @@ export default function Home() {
           초기화
         </button>
 
+        {view === "matching" && (
+        <>
         <div className="rounded-xl border border-dashed border-dashed bg-surface-alt p-5 text-sm">
           <p className="mb-1 font-semibold">URL 가져오기가 안 되는 사이트라면?</p>
           <p className="mb-3 leading-relaxed text-muted">
@@ -1376,6 +1406,8 @@ export default function Home() {
               </ol>
             </div>
           </div>
+        )}
+        </>
         )}
       </div>
     </div>
