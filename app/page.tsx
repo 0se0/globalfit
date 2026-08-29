@@ -105,11 +105,9 @@ const SUBMISSION_METHOD_LABELS: Record<ParsedJob["submission_method"], string> =
   unclear: "명시되지 않음",
 };
 
-function scoreColorClass(score: number): string {
-  if (score >= 70) return "text-emerald-600";
-  if (score >= 40) return "text-amber-600";
-  return "text-red-600";
-}
+// 디자인 시스템: 딥그린은 "결과 숫자"에만 쓰는 고정 색이라 점수 구간별로
+// 색을 바꾸지 않는다 (docs/design/Global Fit 디자인시스템.dc.html 참고)
+const SCORE_COLOR_CLASS = "text-deepgreen";
 
 // analyze-company 라우트는 검색으로 못 찾은 필드를 빈 문자열로 반환한다(암묵지
 // 7번과 같은 "모르면 추측 금지" 원칙) — 빈 화면 대신 명시적으로 안내
@@ -542,28 +540,35 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-12">
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-            GlobalFit
+    <div className="min-h-screen bg-white text-ink">
+      <div className="mx-auto flex max-w-3xl flex-col gap-8 px-5 py-14 sm:px-8">
+        <div className="flex items-baseline gap-2.5 border-b border-line pb-6">
+          <span className="text-lg font-bold tracking-tight text-leaf">Global Fit</span>
+          <span className="font-outfit text-[11px] uppercase tracking-[.16em] text-muted">
+            공고 × 내 문서
           </span>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">
-            국내/해외 채용공고-이력서 핏 분석기
-          </h1>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8"
-        >
-          <div className="flex flex-col gap-3 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-            <div className="flex flex-col gap-2 sm:flex-row">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="flex flex-col gap-1.5">
+            <h1 className="text-3xl leading-[1.1] font-bold tracking-tight sm:text-[32px]">
+              이 공고에 내가 얼마나 맞는지<span className="text-ghost"> 확인하기</span>
+            </h1>
+            <p className="max-w-[56ch] text-sm leading-relaxed text-muted">
+              공고와 이력서를 넣으면 요구 스택 대비 매칭 점수, 제출 방법, 부족한 부분을
+              뽑아냅니다. 자소서·포트폴리오를 함께 넣으면 세 문서 모두 재구성 제안을 받습니다.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3.5 rounded-xl border border-line bg-white p-5">
+            <div className="flex items-baseline justify-between">
+              <span className="font-outfit text-[11px] uppercase tracking-[.14em] text-muted">
+                기업분석 — 회사명 · 직무
+              </span>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
               <div className="flex flex-1 flex-col gap-1.5">
-                <label
-                  htmlFor="companyName"
-                  className="text-xs font-semibold uppercase tracking-wide text-gray-500"
-                >
+                <label htmlFor="companyName" className="text-[13px] font-medium">
                   회사명
                 </label>
                 <input
@@ -578,16 +583,13 @@ export default function Home() {
                     setCompanyReport(null);
                     setCompanyError(null);
                   }}
-                  placeholder="예: 네이버"
-                  className="rounded-lg border border-gray-200 p-2.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  placeholder="예: 주식회사 메리디안"
+                  className="rounded-[9px] border border-line p-3 text-sm outline-none transition focus:border-deepgreen"
                 />
               </div>
               <div className="flex flex-1 flex-col gap-1.5">
-                <label
-                  htmlFor="roleOfInterest"
-                  className="text-xs font-semibold uppercase tracking-wide text-gray-500"
-                >
-                  직무 (선택)
+                <label htmlFor="roleOfInterest" className="text-[13px] font-medium">
+                  관심 직무 <span className="font-normal text-muted">선택</span>
                 </label>
                 <input
                   id="roleOfInterest"
@@ -599,19 +601,36 @@ export default function Home() {
                     setCompanyError(null);
                   }}
                   placeholder="예: 백엔드 엔지니어"
-                  className="rounded-lg border border-gray-200 p-2.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  className="rounded-[9px] border border-line p-3 text-sm outline-none transition focus:border-deepgreen"
                 />
               </div>
             </div>
+            <button
+              type="button"
+              onClick={handleAnalyzeCompany}
+              disabled={!companyName.trim() || isAnalyzingCompany}
+              className="self-start rounded-[9px] border border-lime bg-lime px-5 py-2.5 text-sm font-semibold text-ink transition hover:brightness-95 disabled:cursor-not-allowed disabled:border-line disabled:bg-disabled-bg disabled:text-disabled-text disabled:hover:brightness-100"
+            >
+              {isAnalyzingCompany ? "분석 중..." : "기업분석 보기"}
+            </button>
+            {!companyName.trim() && !isAnalyzingCompany && (
+              <span className="text-xs text-muted">회사명을 입력하면 버튼이 열립니다</span>
+            )}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="jd"
-              className="text-xs font-semibold uppercase tracking-wide text-gray-500"
-            >
-              공고
-            </label>
+          {companyError && (
+            <ErrorCard message={companyError} onRetry={handleAnalyzeCompany} />
+          )}
+
+          <div className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
+            <div className="flex items-baseline justify-between">
+              <span className="font-outfit text-[11px] uppercase tracking-[.14em] text-muted">
+                STEP 01 — 채용공고
+              </span>
+              {jdText.trim() && !isJdUrl && (
+                <span className="text-xs font-semibold text-deepgreen">입력 완료</span>
+              )}
+            </div>
             <textarea
               id="jd"
               value={jdText}
@@ -619,8 +638,9 @@ export default function Home() {
                 setJdText(e.target.value);
                 setFetchError(null);
               }}
-              placeholder="공고 텍스트 또는 공고 URL"
-              className="min-h-32 rounded-xl border border-gray-200 p-3.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+              disabled={isFetchingUrl}
+              placeholder="공고 본문을 붙여넣거나 공고 URL을 넣어주세요"
+              className="min-h-32 rounded-[9px] border border-line p-3 text-sm leading-relaxed outline-none transition focus:border-deepgreen disabled:bg-surface-alt disabled:text-muted"
             />
             {isJdUrl && (
               <div className="flex flex-col gap-2">
@@ -628,37 +648,52 @@ export default function Home() {
                   type="button"
                   onClick={handleFetchUrl}
                   disabled={isFetchingUrl}
-                  className="self-start rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                  className="self-start rounded-[9px] border border-lime bg-lime px-4 py-2 text-sm font-semibold text-ink transition hover:brightness-95 disabled:cursor-not-allowed disabled:border-line disabled:bg-disabled-bg disabled:text-disabled-text"
                 >
                   {isFetchingUrl ? "가져오는 중..." : "URL에서 가져오기"}
                 </button>
                 {fetchError && (
-                  <p className="text-sm text-red-600">{fetchError}</p>
+                  <div className="flex flex-col gap-2 rounded-[9px] border border-alertwash-line bg-alertwash p-3.5">
+                    <p className="text-[13px] font-semibold text-alert">
+                      이 URL에서 공고를 가져오지 못했습니다
+                    </p>
+                    <p className="text-[13px] leading-relaxed">{fetchError}</p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleFetchUrl}
+                        className="rounded-[8px] border border-lime bg-lime px-3 py-1.5 text-xs font-semibold text-ink"
+                      >
+                        다시 시도
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setJdText("");
+                          setFetchError(null);
+                        }}
+                        className="rounded-[8px] border border-line bg-white px-3 py-1.5 text-xs font-medium"
+                      >
+                        직접 붙여넣기
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={handleAnalyzeCompany}
-            disabled={!companyName.trim() || isAnalyzingCompany}
-            className="self-start rounded-lg bg-gray-800 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isAnalyzingCompany ? "분석 중..." : "기업분석 보기"}
-          </button>
-
-          {companyError && (
-            <ErrorCard message={companyError} onRetry={handleAnalyzeCompany} />
-          )}
-
           {companyReport && (
-            <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                  {companyName} 기업분석
-                  {companyReport.job_strategy.personalized && " (입력한 공고 맞춤)"}
-                </p>
+            <div className="flex flex-col gap-5 rounded-xl border border-line bg-white p-5">
+              <div className="flex items-end justify-between gap-3 border-b border-line pb-4">
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight">{companyName}</h2>
+                  <p className="mt-0.5 text-xs text-muted">
+                    {roleOfInterest.trim() ? `${roleOfInterest} 관점 · ` : ""}
+                    출처 {companyReport.sources.length}건
+                    {companyReport.job_strategy.personalized && " · 입력한 공고 맞춤"}
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() =>
@@ -667,119 +702,122 @@ export default function Home() {
                       companyReportToMarkdown(companyName, companyReport)
                     )
                   }
-                  className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-200"
+                  className="shrink-0 rounded-[8px] border border-line bg-white px-3.5 py-2 text-xs font-medium"
                 >
-                  MD로 저장
+                  마크다운 다운로드
                 </button>
               </div>
 
-              <details className="rounded-lg border border-gray-100 p-3" open>
-                <summary className="cursor-pointer text-sm font-semibold text-gray-800">
-                  기업 정보
-                </summary>
-                <div className="mt-2 flex flex-col gap-2 text-sm text-gray-600">
-                  <p>{displayOrEmpty(companyReport.company_info.general)}</p>
-                  <p>
-                    <span className="font-medium text-gray-700">미션/비전:</span>{" "}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div className="rounded-[10px] border border-line p-3.5">
+                  <p className="mb-1.5 text-xs text-muted">기업 정보</p>
+                  <p className="text-sm leading-relaxed">
+                    {displayOrEmpty(companyReport.company_info.general)}
+                  </p>
+                </div>
+                <div className="rounded-[10px] border border-line p-3.5">
+                  <p className="mb-1.5 text-xs text-muted">미션/비전</p>
+                  <p className="text-sm leading-relaxed">
                     {displayOrEmpty(companyReport.company_info.mission_vision)}
                   </p>
-                  <p>
-                    <span className="font-medium text-gray-700">기술 역량:</span>{" "}
+                </div>
+                <div className="rounded-[10px] border border-line p-3.5">
+                  <p className="mb-1.5 text-xs text-muted">기술 역량</p>
+                  <p className="text-sm leading-relaxed">
                     {displayOrEmpty(companyReport.company_info.tech_capability)}
                   </p>
                 </div>
-              </details>
+              </div>
 
-              <details className="rounded-lg border border-gray-100 p-3">
-                <summary className="cursor-pointer text-sm font-semibold text-gray-800">
-                  사업 분석
-                </summary>
-                <div className="mt-2 flex flex-col gap-2 text-sm text-gray-600">
-                  <p>
-                    <span className="font-medium text-gray-700">사업 영역:</span>{" "}
-                    {displayOrEmpty(companyReport.business_analysis.business_areas)}
-                  </p>
-                  <p>
-                    <span className="font-medium text-gray-700">최근 뉴스:</span>{" "}
-                    {displayOrEmpty(companyReport.business_analysis.recent_news)}
-                  </p>
-                  <p>
-                    <span className="font-medium text-gray-700">재무 현황:</span>{" "}
-                    {displayOrEmpty(companyReport.business_analysis.financials)}
-                  </p>
-                  <p>
-                    <span className="font-medium text-gray-700">주요 채용 직무:</span>{" "}
-                    {companyReport.business_analysis.org_roles.join(", ") || "검색 결과 없음"}
-                  </p>
-                </div>
-              </details>
-
-              <details className="rounded-lg border border-gray-100 p-3">
-                <summary className="cursor-pointer text-sm font-semibold text-gray-800">
-                  환경 분석
-                </summary>
-                <div className="mt-2 flex flex-col gap-2 text-sm text-gray-600">
-                  <p>
-                    <span className="font-medium text-gray-700">산업 트렌드:</span>{" "}
-                    {displayOrEmpty(companyReport.environment_analysis.industry_trends)}
-                  </p>
-                  <p>
-                    <span className="font-medium text-gray-700">경쟁사:</span>{" "}
-                    {displayOrEmpty(companyReport.environment_analysis.competitors)}
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="rounded-[12px] border border-line">
+                  <div className="border-b border-line-soft px-4 py-3 text-sm font-semibold">
+                    사업분석
+                  </div>
+                  <div className="flex flex-col gap-2.5 p-4 text-[13px] leading-relaxed">
                     <p>
-                      <span className="font-medium text-gray-700">강점:</span>{" "}
-                      {displayOrEmpty(companyReport.environment_analysis.swot.strengths)}
+                      <span className="font-medium">사업 영역 ·</span>{" "}
+                      {displayOrEmpty(companyReport.business_analysis.business_areas)}
                     </p>
-                    <p>
-                      <span className="font-medium text-gray-700">약점:</span>{" "}
-                      {displayOrEmpty(companyReport.environment_analysis.swot.weaknesses)}
+                    <p className="border-t border-line-soft pt-2.5 text-muted">
+                      <span className="font-medium text-ink">최근 뉴스 ·</span>{" "}
+                      {displayOrEmpty(companyReport.business_analysis.recent_news)}
                     </p>
-                    <p>
-                      <span className="font-medium text-gray-700">기회:</span>{" "}
-                      {displayOrEmpty(companyReport.environment_analysis.swot.opportunities)}
+                    <p className="border-t border-line-soft pt-2.5 text-muted">
+                      <span className="font-medium text-ink">재무 현황 ·</span>{" "}
+                      {displayOrEmpty(companyReport.business_analysis.financials)}
                     </p>
-                    <p>
-                      <span className="font-medium text-gray-700">위협:</span>{" "}
-                      {displayOrEmpty(companyReport.environment_analysis.swot.threats)}
+                    <p className="border-t border-line-soft pt-2.5 text-muted">
+                      <span className="font-medium text-ink">주요 채용 직무 ·</span>{" "}
+                      {companyReport.business_analysis.org_roles.join(", ") || "검색 결과 없음"}
                     </p>
                   </div>
                 </div>
-              </details>
-
-              <details className="rounded-lg border border-gray-100 p-3">
-                <summary className="cursor-pointer text-sm font-semibold text-gray-800">
-                  채용 전략
-                </summary>
-                <div className="mt-2 flex flex-col gap-3 text-sm text-gray-600">
-                  <div>
-                    <p className="mb-1 font-medium text-gray-700">최근 채용공고</p>
-                    {companyReport.job_strategy.recent_postings.length === 0 ? (
-                      <p>검색 결과 없음</p>
-                    ) : (
-                      <ul className="flex flex-col gap-1">
-                        {companyReport.job_strategy.recent_postings.map((posting, i) => (
-                          <li key={i}>
-                            {posting.title}
-                            {posting.stacks.length > 0 && (
-                              <span className="text-gray-400"> — {posting.stacks.join(", ")}</span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                <div className="rounded-[12px] border border-line">
+                  <div className="border-b border-line-soft px-4 py-3 text-sm font-semibold">
+                    환경분석 · SWOT
                   </div>
-                  {companyReport.job_strategy.aggregated_stacks.length > 0 && (
-                    <div>
-                      <p className="mb-1 font-medium text-gray-700">
-                        최근 채용 스택 (매칭 시 우대 스택에 반영됨)
+                  <div className="grid grid-cols-2 text-[13px]">
+                    <div className="border-r border-b border-line-soft p-3.5">
+                      <p className="font-outfit mb-1.5 text-[11px] text-deepgreen">STRENGTH</p>
+                      <p className="leading-relaxed">
+                        {displayOrEmpty(companyReport.environment_analysis.swot.strengths)}
                       </p>
-                      <div className="flex flex-wrap gap-1.5">
+                    </div>
+                    <div className="border-b border-line-soft p-3.5">
+                      <p className="font-outfit mb-1.5 text-[11px] text-alert">WEAKNESS</p>
+                      <p className="leading-relaxed">
+                        {displayOrEmpty(companyReport.environment_analysis.swot.weaknesses)}
+                      </p>
+                    </div>
+                    <div className="border-r border-line-soft p-3.5">
+                      <p className="font-outfit mb-1.5 text-[11px] text-deepgreen">OPPORTUNITY</p>
+                      <p className="leading-relaxed">
+                        {displayOrEmpty(companyReport.environment_analysis.swot.opportunities)}
+                      </p>
+                    </div>
+                    <div className="p-3.5">
+                      <p className="font-outfit mb-1.5 text-[11px] text-alert">THREAT</p>
+                      <p className="leading-relaxed">
+                        {displayOrEmpty(companyReport.environment_analysis.swot.threats)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="border-t border-line-soft p-3.5 text-[13px] leading-relaxed">
+                    <span className="font-medium">산업 트렌드 ·</span>{" "}
+                    {displayOrEmpty(companyReport.environment_analysis.industry_trends)}
+                    <br />
+                    <span className="font-medium">경쟁사 ·</span>{" "}
+                    {displayOrEmpty(companyReport.environment_analysis.competitors)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-[12px] border border-line">
+                <div className="flex items-center justify-between border-b border-line-soft px-4 py-3">
+                  <span className="text-sm font-semibold">채용전략 · 준비 로드맵</span>
+                  {roleOfInterest.trim() && (
+                    <span className="text-xs text-muted">{roleOfInterest} 기준</span>
+                  )}
+                </div>
+                <div className="p-4 text-[13px] leading-relaxed">
+                  <p className="mb-2">
+                    <span className="font-medium">최근 채용공고 ·</span>{" "}
+                    {companyReport.job_strategy.recent_postings.length === 0
+                      ? "검색 결과 없음"
+                      : companyReport.job_strategy.recent_postings
+                          .map((p) => p.title)
+                          .join(", ")}
+                  </p>
+                  {companyReport.job_strategy.aggregated_stacks.length > 0 && (
+                    <div className="mb-2">
+                      <span className="font-medium">최근 채용 스택</span>{" "}
+                      <span className="text-muted">(매칭 시 우대 스택에 반영됨)</span>
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
                         {companyReport.job_strategy.aggregated_stacks.map((stack) => (
                           <span
                             key={stack.raw}
-                            className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600"
+                            className="rounded-[6px] border border-line px-2.5 py-1 text-xs"
                           >
                             {stack.raw}
                           </span>
@@ -787,53 +825,55 @@ export default function Home() {
                       </div>
                     </div>
                   )}
-                  <div>
-                    <p className="mb-1 font-medium text-gray-700">취업 준비 로드맵</p>
-                    <p>{displayOrEmpty(companyReport.job_strategy.roadmap)}</p>
-                  </div>
+                  <p>
+                    <span className="font-medium">준비 로드맵 ·</span>{" "}
+                    {displayOrEmpty(companyReport.job_strategy.roadmap)}
+                  </p>
                 </div>
-              </details>
+              </div>
 
               {companyReport.sources.length > 0 && (
-                <div className="border-t border-gray-100 pt-3">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
-                    출처
-                  </p>
-                  <ul className="flex flex-col gap-1 text-xs text-gray-500">
+                <div className="rounded-[12px] border border-line">
+                  <div className="border-b border-line-soft px-4 py-3 text-sm font-semibold">
+                    출처 {companyReport.sources.length}
+                  </div>
+                  <div className="flex flex-col px-4">
                     {companyReport.sources.map((source, i) => (
-                      <li key={i}>
-                        <a
-                          href={source.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline hover:text-gray-700"
-                        >
-                          {source.title}
-                        </a>
-                      </li>
+                      <a
+                        key={i}
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex gap-3 border-b border-line-soft py-2.5 text-[13px] last:border-b-0 hover:underline"
+                      >
+                        <span className="font-outfit text-muted">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="flex-1 text-ink">{source.title}</span>
+                      </a>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
             </div>
           )}
 
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="resume"
-              className="text-xs font-semibold uppercase tracking-wide text-gray-500"
-            >
-              이력서
-            </label>
+          <div className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
+            <div className="flex items-baseline justify-between">
+              <span className="font-outfit text-[11px] uppercase tracking-[.14em] text-muted">
+                STEP 02 — 이력서
+              </span>
+              {(resumeFile || resumeText.trim()) && (
+                <span className="text-xs font-semibold text-deepgreen">
+                  {resumeFile ? "파일 추출 완료" : "입력 완료"}
+                </span>
+              )}
+            </div>
             {resumeFile ? (
-              <div className="flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50 p-3.5 text-sm text-indigo-900">
-                <span>📎 {resumeFile.name}</span>
-                <button
-                  type="button"
-                  onClick={handleRemoveFile}
-                  className="text-indigo-500 underline hover:text-indigo-700"
-                >
-                  제거
+              <div className="flex items-center justify-between rounded-[8px] border border-line bg-surface-alt p-3">
+                <span className="text-[13px] font-medium">{resumeFile.name}</span>
+                <button type="button" onClick={handleRemoveFile} className="text-[13px] text-muted underline">
+                  교체
                 </button>
               </div>
             ) : (
@@ -844,85 +884,93 @@ export default function Home() {
                   setResumeText(e.target.value);
                   setFileError(null);
                 }}
-                placeholder="이력서 텍스트 (또는 아래에서 파일 첨부)"
-                className="min-h-32 rounded-xl border border-gray-200 p-3.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                placeholder="이력서 텍스트를 붙여넣거나 아래에서 파일을 첨부하세요"
+                className="min-h-32 rounded-[9px] border border-line p-3 text-sm leading-relaxed outline-none transition focus:border-deepgreen"
               />
             )}
             <input
               type="file"
               accept=".pdf,.docx,.html,.htm,.hwp"
               onChange={handleFileChange}
-              className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-200"
+              className="text-[13px] text-muted file:mr-3 file:rounded-[8px] file:border file:border-line file:bg-white file:px-3.5 file:py-2 file:text-[13px] file:font-medium file:text-ink"
             />
-            {fileError && <p className="text-sm text-red-600">{fileError}</p>}
+            <p className="text-xs text-muted">PDF · DOCX · HTML · 최대 3MB (HWP 미지원)</p>
+            {fileError && (
+              <div className="rounded-[9px] border border-alertwash-line bg-alertwash p-3.5">
+                <p className="text-[13px] font-semibold text-alert">파일을 읽을 수 없습니다</p>
+                <p className="mt-1 text-[13px] leading-relaxed">{fileError}</p>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="coverLetter"
-              className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+          <div className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
+            <div className="flex items-baseline justify-between">
+              <span className="font-outfit text-[11px] uppercase tracking-[.14em] text-muted">
+                STEP 03 — 자소서 · 포트폴리오
+              </span>
+              <span className="text-xs text-muted">선택 · 넣으면 함께 재구성됩니다</span>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="coverLetter" className="text-[13px] font-medium">
+                  자소서
+                </label>
+                <textarea
+                  id="coverLetter"
+                  value={coverLetterText}
+                  onChange={(e) => setCoverLetterText(e.target.value)}
+                  placeholder="자소서 텍스트 (입력하면 재구성 제안에 함께 포함됩니다)"
+                  className="min-h-24 rounded-[9px] border border-line p-3 text-sm leading-relaxed outline-none transition focus:border-deepgreen"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="portfolio" className="text-[13px] font-medium">
+                  포트폴리오
+                </label>
+                <textarea
+                  id="portfolio"
+                  value={portfolioText}
+                  onChange={(e) => setPortfolioText(e.target.value)}
+                  placeholder="프로젝트 목록 등 (입력하면 우선순위 재정렬 제안도 포함됩니다)"
+                  className="min-h-24 rounded-[9px] border border-line p-3 text-sm leading-relaxed outline-none transition focus:border-deepgreen"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-[13px] text-muted">
+              {isJdUrl ? (
+                <span>공고 URL을 아직 가져오지 않았습니다.</span>
+              ) : isEmpty ? (
+                <span>공고와 이력서를 모두 입력해 주세요.</span>
+              ) : !companyReport ? (
+                <span>매칭 결과는 기업분석을 먼저 완료해야 확인할 수 있습니다.</span>
+              ) : (
+                <span>공고·이력서·기업분석 확인됨 · 분석에 약 30초</span>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={isBlocked}
+              className="rounded-[9px] border border-lime bg-lime px-6 py-3 text-sm font-semibold text-ink transition hover:brightness-95 disabled:cursor-not-allowed disabled:border-line disabled:bg-disabled-bg disabled:text-disabled-text disabled:hover:brightness-100"
             >
-              자소서 (선택)
-            </label>
-            <textarea
-              id="coverLetter"
-              value={coverLetterText}
-              onChange={(e) => setCoverLetterText(e.target.value)}
-              placeholder="자소서 텍스트 (입력하면 이력서 재구성 제안에 자소서 재구성도 함께 포함됩니다)"
-              className="min-h-24 rounded-xl border border-gray-200 p-3.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-            />
+              매칭 결과 보기
+            </button>
           </div>
-
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="portfolio"
-              className="text-xs font-semibold uppercase tracking-wide text-gray-500"
-            >
-              포트폴리오 (선택)
-            </label>
-            <textarea
-              id="portfolio"
-              value={portfolioText}
-              onChange={(e) => setPortfolioText(e.target.value)}
-              placeholder="포트폴리오 텍스트 (프로젝트 목록 등 — 입력하면 프로젝트 우선순위 재정렬 제안도 함께 포함됩니다)"
-              className="min-h-24 rounded-xl border border-gray-200 p-3.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-            />
-          </div>
-
-          {!isJdUrl && isEmpty && (
-            <p className="text-sm text-red-600">
-              공고와 이력서를 모두 입력해 주세요.
-            </p>
-          )}
-          {!isJdUrl && !isEmpty && !companyReport && (
-            <p className="text-sm text-red-600">
-              매칭 결과는 기업분석을 먼저 완료해야 확인할 수 있습니다. 위에서 회사명을
-              입력하고 "기업분석 보기"를 눌러주세요.
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={isBlocked}
-            className="rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-          >
-            매칭 결과 보기
-          </button>
         </form>
 
         <button
           type="button"
           onClick={handleReset}
-          className="self-start text-sm text-gray-400 underline hover:text-gray-600"
+          className="self-start text-[13px] text-muted underline"
         >
           초기화
         </button>
 
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-100/60 p-5 text-sm text-gray-600">
-          <p className="mb-1 font-semibold text-gray-800">
-            URL 가져오기가 안 되는 사이트라면?
-          </p>
-          <p className="mb-3">
+        <div className="rounded-xl border border-dashed border-dashed bg-surface-alt p-5 text-sm">
+          <p className="mb-1 font-semibold">URL 가져오기가 안 되는 사이트라면?</p>
+          <p className="mb-3 leading-relaxed text-muted">
             아래 버튼을 즐겨찾기 바로 드래그해 두세요. 공고 페이지에서 클릭하면
             화면에 보이는 텍스트가 복사됩니다 — 서버가 아니라 지금 보고 계신
             브라우저에서 직접 긁어오는 방식이라 차단되는 사이트에서도 동작해요.
@@ -930,16 +978,16 @@ export default function Home() {
           <a
             ref={bookmarkletRef}
             onClick={(e) => e.preventDefault()}
-            className="inline-block cursor-move rounded-lg bg-gray-800 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-gray-900"
+            className="inline-block cursor-move rounded-[9px] bg-ink px-4 py-2 text-sm font-medium text-white"
           >
-            📌 텍스트 긁어오기
+            텍스트 긁어오기
           </a>
         </div>
 
         {savedEntry && (
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-sm text-emerald-900">
-            <p className="mb-2 text-xs font-medium text-emerald-600">
-              ✓ 저장됨 · {savedEntry.savedAt}
+          <div className="rounded-xl border border-limewash-line bg-limewash p-5 text-sm">
+            <p className="mb-2 text-xs font-medium text-deepgreen">
+              저장됨 · {savedEntry.savedAt}
             </p>
             <p>
               <span className="font-semibold">공고:</span>{" "}
@@ -948,7 +996,7 @@ export default function Home() {
             <p>
               <span className="font-semibold">이력서:</span>{" "}
               {savedEntry.resumeFile
-                ? `📎 ${savedEntry.resumeFile.name}`
+                ? savedEntry.resumeFile.name
                 : savedEntry.resumeText.slice(0, 30)}
             </p>
             {savedEntry.coverLetterText && (
@@ -973,13 +1021,13 @@ export default function Home() {
           />
         )}
         {(isParsingJob || parsedJob) && !parseJobError && (
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
-            <p className="mb-2 text-xs font-medium text-gray-400">
+          <div className="rounded-xl border border-line bg-white p-5 text-sm">
+            <p className="mb-2 text-xs font-medium text-muted">
               공고 분석 결과 (디버그용 — 매칭 점수/gap은 아래 결과 카드 참고)
             </p>
-            {isParsingJob && <p className="text-gray-500">분석 중...</p>}
+            {isParsingJob && <p className="text-muted">분석 중...</p>}
             {parsedJob && (
-              <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
+              <pre className="overflow-x-auto rounded-[8px] bg-surface-alt p-3 text-xs whitespace-pre-wrap break-words">
                 {JSON.stringify(parsedJob, null, 2)}
               </pre>
             )}
@@ -993,13 +1041,11 @@ export default function Home() {
           />
         )}
         {(isParsingApplicant || parsedApplicant) && !parseApplicantError && (
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
-            <p className="mb-2 text-xs font-medium text-gray-400">
-              이력서 분석 결과 (디버그용)
-            </p>
-            {isParsingApplicant && <p className="text-gray-500">분석 중...</p>}
+          <div className="rounded-xl border border-line bg-white p-5 text-sm">
+            <p className="mb-2 text-xs font-medium text-muted">이력서 분석 결과 (디버그용)</p>
+            {isParsingApplicant && <p className="text-muted">분석 중...</p>}
             {parsedApplicant && (
-              <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
+              <pre className="overflow-x-auto rounded-[8px] bg-surface-alt p-3 text-xs whitespace-pre-wrap break-words">
                 {JSON.stringify(parsedApplicant, null, 2)}
               </pre>
             )}
@@ -1015,68 +1061,104 @@ export default function Home() {
           />
         )}
         {(isJudgingJob || judgeResult) && !judgeError && (
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
-            <p className="mb-2 text-xs font-medium text-gray-400">
-              판단 지점 에이전트 결과 (디버그용)
-            </p>
-            {isJudgingJob && <p className="text-gray-500">분석 중...</p>}
+          <div className="rounded-xl border border-line bg-white p-5 text-sm">
+            <p className="mb-2 text-xs font-medium text-muted">판단 지점 에이전트 결과 (디버그용)</p>
+            {isJudgingJob && <p className="text-muted">분석 중...</p>}
             {judgeResult && (
-              <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs text-gray-700">
+              <pre className="overflow-x-auto rounded-[8px] bg-surface-alt p-3 text-xs whitespace-pre-wrap break-words">
                 {JSON.stringify(judgeResult, null, 2)}
               </pre>
             )}
           </div>
         )}
 
-        {matchResult && parsedJob && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8">
-            <div className="flex flex-col items-center gap-1 border-b border-gray-100 pb-6">
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                매칭 점수
-              </span>
-              <span className={`text-5xl font-bold ${scoreColorClass(matchResult.score)}`}>
-                {matchResult.score}%
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-1 border-b border-gray-100 py-4 text-sm text-gray-700">
-              <p>
-                📋 지원 방법:{" "}
-                <span className="font-medium">
-                  {SUBMISSION_METHOD_LABELS[parsedJob.submission_method]}
+        {matchResult && parsedJob && parsedApplicant && (
+          <div className="flex flex-col gap-5 rounded-xl border border-line bg-white p-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-3.5 rounded-[14px] bg-gradient-to-br from-deepgreen to-deepgreen-dark p-6 text-white">
+                <span className="font-outfit text-[11px] uppercase tracking-[.16em] text-white/70">
+                  Match Score
                 </span>
-              </p>
-              <p>
-                📎 필요 서류:{" "}
-                <span className="font-medium">
-                  {parsedJob.required_documents.length > 0
-                    ? parsedJob.required_documents.join(", ")
-                    : "명시된 서류 없음"}
-                </span>
-              </p>
-            </div>
-
-            <div className="pt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
-                부족한 스택
-              </p>
-              {matchResult.gap_stacks.length === 0 ? (
-                <p className="text-sm text-gray-500">부족한 스택 없음</p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {matchResult.gap_stacks.map((stack) => (
-                    <span
-                      key={stack}
-                      className="rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700 ring-1 ring-red-200"
-                    >
-                      {stack}
-                    </span>
-                  ))}
+                <div className="flex items-end gap-3">
+                  <span className="font-outfit text-6xl leading-none font-bold text-lime">
+                    {matchResult.score}
+                  </span>
+                  <span className="pb-2 text-[15px] text-white/80">/ 100</span>
                 </div>
-              )}
+                <div className="h-2 overflow-hidden rounded-full bg-white/20">
+                  <div
+                    className="h-full bg-lime"
+                    style={{ width: `${Math.min(matchResult.score, 100)}%` }}
+                  />
+                </div>
+                <p className="text-[13px] leading-relaxed text-white/80">
+                  하드 룰 기반 계산이라 같은 입력이면 항상 같은 점수가 나옵니다.
+                </p>
+                <div className="flex gap-4 border-t border-white/15 pt-3.5 text-[13px]">
+                  <div className="flex-1">
+                    <p className="mb-0.5 text-white/60">제출 방법</p>
+                    <p className="font-medium">
+                      {SUBMISSION_METHOD_LABELS[parsedJob.submission_method]}
+                    </p>
+                  </div>
+                  <div className="flex-1">
+                    <p className="mb-0.5 text-white/60">필요 서류</p>
+                    <p className="font-medium">
+                      {parsedJob.required_documents.length > 0
+                        ? parsedJob.required_documents.join(", ")
+                        : "명시된 서류 없음"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 rounded-[14px] border border-line p-6">
+                <span className="font-outfit text-[11px] uppercase tracking-[.14em] text-muted">
+                  스택 대조
+                </span>
+                <div>
+                  <p className="mb-1.5 text-xs text-muted">
+                    보유 · {parsedApplicant.stacks.length}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {parsedApplicant.stacks.map((stack) => (
+                      <span
+                        key={stack.raw}
+                        className="rounded-[6px] border border-limewash-line bg-limewash px-2.5 py-1 text-xs text-deepgreen"
+                      >
+                        {stack.raw}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="mt-1.5 mb-1.5 text-xs text-muted">
+                    부족 · {matchResult.gap_stacks.length}
+                  </p>
+                  {matchResult.gap_stacks.length === 0 ? (
+                    <p className="text-sm text-muted">부족한 스택 없음</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5">
+                      {matchResult.gap_stacks.map((stack) => (
+                        <span
+                          key={stack}
+                          className="rounded-[6px] border border-alertwash-line bg-alertwash px-2.5 py-1 text-xs text-alert"
+                        >
+                          {stack}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="pt-4">
+            <div className="flex flex-col items-start gap-3 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-[13px] text-muted">
+                {matchResult.gap_stacks.length > 0
+                  ? `부족한 ${matchResult.gap_stacks.length}개를 반영해 문서를 다시 쓰면 점수가 올라갑니다`
+                  : "요구 스택을 모두 충족했습니다"}
+              </span>
               {!suggestionResult && (
                 <button
                   type="button"
@@ -1087,7 +1169,7 @@ export default function Home() {
                     ])
                   }
                   disabled={isSuggestingResume}
-                  className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                  className="shrink-0 rounded-[9px] border border-lime bg-lime px-5 py-2.5 text-sm font-semibold text-ink transition hover:brightness-95 disabled:cursor-not-allowed disabled:border-line disabled:bg-disabled-bg disabled:text-disabled-text"
                 >
                   {isSuggestingResume ? "재구성 제안 생성 중..." : "이력서 재구성 제안 보기"}
                 </button>
@@ -1111,86 +1193,102 @@ export default function Home() {
         )}
 
         {suggestionResult && improvedMatch && potentialMatch && matchResult && (
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
-              이력서 재구성 제안
-            </p>
-            <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-700">
-              <span>
-                원본 <span className={`font-bold ${scoreColorClass(matchResult.score)}`}>
-                  {matchResult.score}%
-                </span>
-              </span>
-              <span>→</span>
-              <span>
-                개선 후{" "}
-                <span className={`font-bold ${scoreColorClass(improvedMatch.score)}`}>
-                  {improvedMatch.score}%
-                </span>
-              </span>
-              <span>→</span>
-              <span>
-                잠재 최대{" "}
-                <span className={`font-bold ${scoreColorClass(potentialMatch.score)}`}>
-                  {potentialMatch.score}%
-                </span>
-              </span>
+          <div className="flex flex-col gap-5 rounded-xl border border-line bg-white p-6">
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">
+                재구성<span className="text-ghost"> 제안</span>
+              </h2>
+              <p className="mt-1 text-xs text-muted">
+                부족 스택 {matchResult.gap_stacks.length}개와 공고 키워드를 반영해 문서를 다시
+                썼습니다.
+              </p>
             </div>
-            <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-xl bg-gray-50 p-4 text-sm text-gray-800">
-              {suggestionResult.resume_suggestion}
-            </pre>
+
+            <div className="flex flex-wrap items-center gap-8 rounded-[12px] border border-line p-5">
+              <div>
+                <p className="mb-1 text-xs text-muted">원본</p>
+                <p className="font-outfit text-3xl font-bold text-muted">{matchResult.score}</p>
+              </div>
+              <div>
+                <p className="mb-1 text-xs text-muted">개선 후</p>
+                <p className={`font-outfit text-3xl font-bold ${SCORE_COLOR_CLASS}`}>
+                  {improvedMatch.score}
+                </p>
+              </div>
+              <div>
+                <p className="mb-1 text-xs text-muted">잠재 최대</p>
+                <p className="font-outfit text-3xl font-bold text-ink">{potentialMatch.score}</p>
+              </div>
+            </div>
+
+            <div className="rounded-[12px] border border-line">
+              <div className="border-b border-line-soft px-4 py-3 text-sm font-semibold">
+                이력서 재구성문
+              </div>
+              <pre className="overflow-x-auto p-4 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                {suggestionResult.resume_suggestion}
+              </pre>
+            </div>
 
             {coverLetterText.trim() && suggestionResult.cover_letter_suggestion.trim() && (
-              <div className="mt-4 border-t border-gray-100 pt-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
-                  자소서 재구성 제안
-                </p>
-                <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-xl bg-gray-50 p-4 text-sm text-gray-800">
+              <div className="rounded-[12px] border border-line">
+                <div className="border-b border-line-soft px-4 py-3 text-sm font-semibold">
+                  자소서 재구성문
+                </div>
+                <pre className="overflow-x-auto p-4 text-sm leading-relaxed whitespace-pre-wrap break-words">
                   {suggestionResult.cover_letter_suggestion}
                 </pre>
               </div>
             )}
 
             {portfolioText.trim() && suggestionResult.portfolio_suggestion.trim() && (
-              <div className="mt-4 border-t border-gray-100 pt-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
-                  포트폴리오 재구성 제안
-                </p>
-                <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-xl bg-gray-50 p-4 text-sm text-gray-800">
+              <div className="rounded-[12px] border border-line">
+                <div className="border-b border-line-soft px-4 py-3 text-sm font-semibold">
+                  포트폴리오 재구성문
+                </div>
+                <pre className="overflow-x-auto p-4 text-sm leading-relaxed whitespace-pre-wrap break-words">
                   {suggestionResult.portfolio_suggestion}
                 </pre>
               </div>
             )}
 
-            <div className="mt-4 border-t border-gray-100 pt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+            <div className="rounded-[12px] border border-line">
+              <div className="border-b border-line-soft px-4 py-3 text-sm font-semibold">
                 개선 제안서
-              </p>
+              </div>
               {!improvementSuggestions || improvementSuggestions.length === 0 ? (
-                <p className="text-sm text-gray-500">개선 제안 없음</p>
+                <p className="p-4 text-sm text-muted">개선 제안 없음</p>
               ) : (
-                <ul className="flex flex-col gap-2">
-                  {improvementSuggestions.map((stack) => (
-                    <li
-                      key={stack}
-                      className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-100"
-                    >
-                      <span className="font-semibold">{stack}</span> — 보유 여부는
-                      사용자가 직접 판단
+                <ul className="flex flex-col gap-2.5 p-4">
+                  {improvementSuggestions.map((stack, i) => (
+                    <li key={stack} className="flex gap-3 text-[13px] leading-relaxed">
+                      <span className="font-outfit text-deepgreen">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span>
+                        <span className="font-semibold">{stack}</span> — 보유 여부는 사용자가
+                        직접 판단
+                      </span>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
 
-            <div className="mt-4 border-t border-gray-100 pt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
-                예상 기술면접 꼬리질문
-              </p>
-              <ol className="flex flex-col gap-2">
+            <div className="rounded-[12px] border border-line">
+              <div className="border-b border-line-soft px-4 py-3 text-sm font-semibold">
+                면접 꼬리질문 {suggestionResult.interview_questions.length}
+              </div>
+              <ol className="flex flex-col gap-3 p-4">
                 {suggestionResult.interview_questions.map((question, i) => (
-                  <li key={i} className="rounded-xl bg-indigo-50 p-3 text-sm text-indigo-900 ring-1 ring-indigo-100">
-                    {i + 1}. {question}
+                  <li
+                    key={i}
+                    className={i > 0 ? "border-t border-line-soft pt-3 text-[13px] leading-relaxed" : "text-[13px] leading-relaxed"}
+                  >
+                    <span className="font-outfit mb-1 block text-[11px] text-muted">
+                      Q{i + 1}
+                    </span>
+                    {question}
                   </li>
                 ))}
               </ol>
