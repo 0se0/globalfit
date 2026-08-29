@@ -109,10 +109,23 @@ const SUBMISSION_METHOD_LABELS: Record<ParsedJob["submission_method"], string> =
 // 색을 바꾸지 않는다 (docs/design/Global Fit 디자인시스템.dc.html 참고)
 const SCORE_COLOR_CLASS = "text-deepgreen";
 
-// analyze-company 라우트는 검색으로 못 찾은 필드를 빈 문자열로 반환한다(암묵지
-// 7번과 같은 "모르면 추측 금지" 원칙) — 빈 화면 대신 명시적으로 안내
+// analyze-company 라우트는 제공된 자료에서 못 찾은 필드를 빈 문자열로 반환한다
+// (암묵지 7번과 같은 "모르면 추측 금지" 원칙) — 빈 화면 대신 명시적으로 안내
 function displayOrEmpty(text: string): string {
-  return text.trim() ? text : "검색 결과 없음";
+  return text.trim() ? text : "제공된 자료에서 확인 불가";
+}
+
+const MAX_COMPANY_URLS = 3;
+
+function parseCompanyUrls(rawText: string): string[] {
+  return Array.from(
+    new Set(
+      rawText
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => URL_ONLY_PATTERN.test(line))
+    )
+  ).slice(0, MAX_COMPANY_URLS);
 }
 
 function companyReportToMarkdown(companyName: string, report: CompanyReport): string {
@@ -122,7 +135,7 @@ function companyReportToMarkdown(companyName: string, report: CompanyReport): st
     ? job_strategy.recent_postings
         .map((posting) => `- ${posting.title} (${posting.stacks.join(", ") || "스택 정보 없음"})`)
         .join("\n")
-    : "검색 결과 없음";
+    : "제공된 자료에서 확인 불가";
   const sourcesText = sources.length
     ? sources.map((source) => `- [${source.title}](${source.url})`).join("\n")
     : "출처 없음";
@@ -225,9 +238,11 @@ export default function Home() {
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState("");
   const [roleOfInterest, setRoleOfInterest] = useState("");
+  const [companyUrlsText, setCompanyUrlsText] = useState("");
   const [isAnalyzingCompany, setIsAnalyzingCompany] = useState(false);
   const [companyReport, setCompanyReport] = useState<CompanyReport | null>(null);
   const [companyError, setCompanyError] = useState<string | null>(null);
+  const [companyFetchWarning, setCompanyFetchWarning] = useState<string | null>(null);
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
   const isEmpty = !jdText.trim() || (!resumeText.trim() && !resumeFile);
   // 매칭 점수는 기업분석을 먼저 완료해야만 확인할 수 있다 (2026-08-29 결정) —
@@ -472,16 +487,56 @@ export default function Home() {
 
   async function handleAnalyzeCompany() {
     if (!companyName.trim()) return;
+    const urls = parseCompanyUrls(companyUrlsText);
+    if (urls.length === 0) {
+      setCompanyError("회사 관련 URL을 최소 1개 입력해주세요 (홈페이지, 채용공고, 뉴스 기사 등).");
+      return;
+    }
     setIsAnalyzingCompany(true);
     setCompanyError(null);
+    setCompanyFetchWarning(null);
     setCompanyReport(null);
     try {
+      const fetchResults = await Promise.allSettled(
+        urls.map(async (url) => {
+          const res = await fetch("/api/fetch-job", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          });
+          if (!res.ok) throw new Error("fetch_failed");
+          const data: { text: string } = await res.json();
+          return { url, text: data.text };
+        })
+      );
+
+      const sourceTexts = fetchResults
+        .filter(
+          (r): r is PromiseFulfilledResult<{ url: string; text: string }> =>
+            r.status === "fulfilled"
+        )
+        .map((r) => r.value);
+      const failedCount = urls.length - sourceTexts.length;
+
+      if (sourceTexts.length === 0) {
+        setCompanyError(
+          "입력한 URL에서 정보를 가져오지 못했습니다. 다른 URL을 시도하거나 URL을 확인해주세요."
+        );
+        return;
+      }
+      if (failedCount > 0) {
+        setCompanyFetchWarning(
+          `URL ${urls.length}개 중 ${failedCount}개를 가져오지 못해 나머지 ${sourceTexts.length}개만으로 분석합니다.`
+        );
+      }
+
       const res = await fetch("/api/analyze-company", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           companyName: companyName.trim(),
           roleOfInterest: roleOfInterest.trim() || undefined,
+          sourceTexts,
         }),
       });
       if (!res.ok) throw new Error("analyze_failed");
@@ -535,8 +590,10 @@ export default function Home() {
     setSuggestionError(null);
     setCompanyName("");
     setRoleOfInterest("");
+    setCompanyUrlsText("");
     setCompanyReport(null);
     setCompanyError(null);
+    setCompanyFetchWarning(null);
   }
 
   return (
@@ -605,6 +662,26 @@ export default function Home() {
                 />
               </div>
             </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="companyUrls" className="text-[13px] font-medium">
+                회사 관련 URL <span className="font-normal text-muted">최대 {MAX_COMPANY_URLS}개, 줄바꿈으로 구분</span>
+              </label>
+              <textarea
+                id="companyUrls"
+                value={companyUrlsText}
+                onChange={(e) => {
+                  setCompanyUrlsText(e.target.value);
+                  setCompanyReport(null);
+                  setCompanyError(null);
+                  setCompanyFetchWarning(null);
+                }}
+                placeholder={"예:\nhttps://company.com\nhttps://company.com/careers\nhttps://news.site/article"}
+                className="min-h-24 rounded-[9px] border border-line p-3 text-sm leading-relaxed outline-none transition focus:border-deepgreen"
+              />
+              <span className="text-xs text-muted">
+                회사 홈페이지·채용공고·뉴스 기사 등의 URL을 서버가 직접 가져와 분석 자료로 씁니다.
+              </span>
+            </div>
             <button
               type="button"
               onClick={handleAnalyzeCompany}
@@ -618,6 +695,9 @@ export default function Home() {
             )}
           </div>
 
+          {companyFetchWarning && (
+            <p className="text-xs text-muted">{companyFetchWarning}</p>
+          )}
           {companyError && (
             <ErrorCard message={companyError} onRetry={handleAnalyzeCompany} />
           )}
@@ -749,7 +829,7 @@ export default function Home() {
                     </p>
                     <p className="border-t border-line-soft pt-2.5 text-muted">
                       <span className="font-medium text-ink">주요 채용 직무 ·</span>{" "}
-                      {companyReport.business_analysis.org_roles.join(", ") || "검색 결과 없음"}
+                      {companyReport.business_analysis.org_roles.join(", ") || "제공된 자료에서 확인 불가"}
                     </p>
                   </div>
                 </div>
@@ -804,7 +884,7 @@ export default function Home() {
                   <p className="mb-2">
                     <span className="font-medium">최근 채용공고 ·</span>{" "}
                     {companyReport.job_strategy.recent_postings.length === 0
-                      ? "검색 결과 없음"
+                      ? "제공된 자료에서 확인 불가"
                       : companyReport.job_strategy.recent_postings
                           .map((p) => p.title)
                           .join(", ")}

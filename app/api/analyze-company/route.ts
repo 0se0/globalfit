@@ -71,15 +71,15 @@ const RESPONSE_SCHEMA = {
 };
 
 const RULES = `Follow these rules exactly:
-- Use the google_search tool to find real, current information about the company. Every fact must come from an actual search result — never invent or guess a fact, number, article, posting, or competitor name.
-- If you cannot find real information for a field, return an empty string "" (or empty array [] for array fields) for that field instead of guessing. Do not pad with generic filler text.
-- financials: summarize only what you actually found (e.g. from news articles or public disclosures) about the last ~3 years of revenue/profit/loss. If the company is private and no financial info is found, return "".
-- recent_postings: list real job postings from 2025-2026 that you actually found via search, with the title and the technology/skill stack names literally mentioned in that posting. If none are found, return an empty array.
-- org_roles: at least 3 real job functions/departments this company is known to hire for, if found.
-- roadmap: a concrete job-prep roadmap (activities, certifications, side projects, skills to build) for someone targeting {{ROLE}} at this company.
+- Base every fact ONLY on the source materials given below. Never invent or guess a fact, number, article, posting, or competitor name that isn't actually present in the source materials.
+- If a field isn't covered by the source materials, return an empty string "" (or empty array [] for array fields) for that field instead of guessing. Do not pad with generic filler text.
+- financials: summarize only what the source materials actually state about revenue/profit/loss. If nothing is mentioned, return "".
+- recent_postings: list job postings mentioned in the source materials, with the title and the technology/skill stack names literally mentioned in that posting. If none are found, return an empty array.
+- org_roles: at least 3 real job functions/departments mentioned in the source materials, if present.
+- roadmap: a concrete job-prep roadmap (activities, certifications, side projects, skills to build) for someone targeting {{ROLE}} at this company, grounded in what the source materials reveal about the company's needs.
 - Output entirely in Korean, except technology/stack names which must stay in their original form (e.g. "React", not "리액트") — do not translate or localize stack names.`;
 
-const PROMPT_WITH_CONTEXT = `You are researching a company for a job-seeker's company analysis report. ${RULES}
+const PROMPT_WITH_CONTEXT = `You are writing a company analysis report for a job-seeker, based only on the source materials below. ${RULES}
 
 Company: {{COMPANY_NAME}}
 Role of interest: {{ROLE}}
@@ -87,12 +87,18 @@ Role of interest: {{ROLE}}
 This job-seeker has already been matched against a specific job posting requiring these stacks:
 Required: {{REQUIRED_STACKS}}
 Preferred: {{PREFERRED_STACKS}}
-When writing the roadmap, reference this context to make it specific to their situation (e.g. which of these stacks to prioritize learning, given what the company's other postings ask for).`;
+When writing the roadmap, reference this context to make it specific to their situation (e.g. which of these stacks to prioritize learning, given what the company's other postings ask for).
 
-const PROMPT_STANDALONE = `You are researching a company for a job-seeker's company analysis report. ${RULES}
+Source materials:
+{{SOURCE_TEXTS}}`;
+
+const PROMPT_STANDALONE = `You are writing a company analysis report for a job-seeker, based only on the source materials below. ${RULES}
 
 Company: {{COMPANY_NAME}}
-Role of interest: {{ROLE}}`;
+Role of interest: {{ROLE}}
+
+Source materials:
+{{SOURCE_TEXTS}}`;
 
 interface GeminiCompanyOutput {
   company_info: {
@@ -134,55 +140,49 @@ export interface CompanyReport {
 }
 
 export async function POST(request: Request) {
-  const { companyName, roleOfInterest, jobContext } = (await request.json()) as {
+  const { companyName, roleOfInterest, jobContext, sourceTexts } = (await request.json()) as {
     companyName?: string;
     roleOfInterest?: string;
     jobContext?: { requiredStacks: string[]; preferredStacks: string[] };
+    sourceTexts?: { url: string; text: string }[];
   };
 
   if (!companyName || !companyName.trim()) {
     return NextResponse.json({ error: "empty_company_name" }, { status: 400 });
   }
 
+  if (!sourceTexts || sourceTexts.length === 0) {
+    return NextResponse.json({ error: "no_source_texts" }, { status: 400 });
+  }
+
   const role = roleOfInterest?.trim() || "관심 직무 미지정 (회사 전반)";
+  const sourceTextsBlock = sourceTexts
+    .map((source, i) => `[Source ${i + 1}: ${source.url}]\n${source.text}`)
+    .join("\n\n");
   const prompt = jobContext
     ? PROMPT_WITH_CONTEXT.replace("{{COMPANY_NAME}}", companyName)
         .replace(/{{ROLE}}/g, role)
         .replace("{{REQUIRED_STACKS}}", jobContext.requiredStacks.join(", ") || "(none)")
         .replace("{{PREFERRED_STACKS}}", jobContext.preferredStacks.join(", ") || "(none)")
-    : PROMPT_STANDALONE.replace("{{COMPANY_NAME}}", companyName).replace(/{{ROLE}}/g, role);
+        .replace("{{SOURCE_TEXTS}}", sourceTextsBlock)
+    : PROMPT_STANDALONE.replace("{{COMPANY_NAME}}", companyName)
+        .replace(/{{ROLE}}/g, role)
+        .replace("{{SOURCE_TEXTS}}", sourceTextsBlock);
 
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    const { parsed, sources } = await retryOnce(async () => {
+    const parsed = await retryOnce(async () => {
       const response = await ai.models.generateContent({
         model: GEMINI_MODEL,
         contents: prompt,
         config: {
-          tools: [{ googleSearch: {} }],
           responseMimeType: "application/json",
           responseSchema: RESPONSE_SCHEMA,
         },
       });
 
-      const groundingChunks =
-        response.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
-      const seenUrls = new Set<string>();
-      const sources = groundingChunks
-        .map((chunk) => chunk.web)
-        .filter((web): web is { title?: string; uri?: string } => web !== undefined && !!web.uri)
-        .filter((web) => {
-          if (seenUrls.has(web.uri as string)) return false;
-          seenUrls.add(web.uri as string);
-          return true;
-        })
-        .map((web) => ({ title: web.title ?? web.uri ?? "출처", url: web.uri as string }));
-
-      return {
-        parsed: JSON.parse(response.text ?? "") as GeminiCompanyOutput,
-        sources,
-      };
+      return JSON.parse(response.text ?? "") as GeminiCompanyOutput;
     });
 
     const rawCompanyStacks = Array.from(
@@ -199,7 +199,7 @@ export async function POST(request: Request) {
         personalized: !!jobContext,
         aggregated_stacks,
       },
-      sources,
+      sources: sourceTexts.map((source) => ({ title: source.url, url: source.url })),
     };
 
     return NextResponse.json(result);
