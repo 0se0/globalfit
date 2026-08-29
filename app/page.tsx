@@ -232,7 +232,9 @@ export default function Home() {
   const [companyError, setCompanyError] = useState<string | null>(null);
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
   const isEmpty = !jdText.trim() || (!resumeText.trim() && !resumeFile);
-  const isBlocked = isJdUrl || isEmpty;
+  // 매칭 점수는 기업분석을 먼저 완료해야만 확인할 수 있다 (2026-08-29 결정) —
+  // 기업분석 없이 공고/이력서만으로 매칭하는 경로는 더 이상 허용하지 않는다
+  const isBlocked = isJdUrl || isEmpty || !companyReport;
   const bookmarkletRef = useRef<HTMLAnchorElement>(null);
 
   // 기업분석을 실행했다면 그 회사의 "최근 채용공고 요구 스택"을 이 공고의
@@ -881,13 +883,19 @@ export default function Home() {
               공고와 이력서를 모두 입력해 주세요.
             </p>
           )}
+          {!isJdUrl && !isEmpty && !companyReport && (
+            <p className="text-sm text-red-600">
+              매칭 결과는 기업분석을 먼저 완료해야 확인할 수 있습니다. 위에서 회사명을
+              입력하고 "기업분석 보기"를 눌러주세요.
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={isBlocked}
             className="rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300"
           >
-            제출
+            매칭 결과 보기
           </button>
         </form>
 
