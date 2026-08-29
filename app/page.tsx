@@ -598,7 +598,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-ink">
-      <div className="mx-auto flex max-w-3xl flex-col gap-8 px-5 py-14 sm:px-8">
+      <div className="mx-auto flex max-w-3xl flex-col gap-8 px-5 py-14 sm:px-8 lg:max-w-[1180px]">
         <div className="flex items-baseline gap-2.5 border-b border-line pb-6">
           <span className="text-lg font-bold tracking-tight text-leaf">Global Fit</span>
           <span className="font-outfit text-[11px] uppercase tracking-[.16em] text-muted">
@@ -702,6 +702,7 @@ export default function Home() {
             <ErrorCard message={companyError} onRetry={handleAnalyzeCompany} />
           )}
 
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           <div className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
             <div className="flex items-baseline justify-between">
               <span className="font-outfit text-[11px] uppercase tracking-[.14em] text-muted">
@@ -981,6 +982,7 @@ export default function Home() {
                 <p className="mt-1 text-[13px] leading-relaxed">{fileError}</p>
               </div>
             )}
+          </div>
           </div>
 
           <div className="flex flex-col gap-3 rounded-xl border border-line bg-white p-5">
