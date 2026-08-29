@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type SubmitEvent } from "react";
-import Link from "next/link";
 import { calculateMatch } from "@/lib/calculate-match";
 import type { CanonicalizedStack } from "@/lib/canonicalize-stacks";
 import { ErrorCard } from "@/components/ErrorCard";
+import type { CompanyReport } from "@/app/api/analyze-company/route";
 
 // 서버가 못 가져오는 사이트(봇 차단, IP 평판 차단 등)에서 쓰는 북마클릿 —
 // 사용자 본인 브라우저에서 실행되므로 서버측 차단과 무관하게 항상 동작함.
@@ -110,6 +110,106 @@ function scoreColorClass(score: number): string {
   return "text-red-600";
 }
 
+// 기업분석의 "최근 채용공고 요구 스택"을 JD의 preferred_stacks에 합친다 (2026-08-29
+// 결정, CLAUDE.md 참고) — canonical 기준으로 중복 제거. required_stacks는 손대지
+// 않고, 기업분석을 안 했으면 JD의 preferred_stacks만 그대로 반환한다
+function mergeCompanyStacksIntoPreferred(
+  jdPreferred: CanonicalizedStack[],
+  companyAggregatedStacks: CanonicalizedStack[] | undefined
+): CanonicalizedStack[] {
+  if (!companyAggregatedStacks || companyAggregatedStacks.length === 0) return jdPreferred;
+  const seen = new Set(jdPreferred.map((s) => (s.canonical ?? s.raw).toLowerCase()));
+  const merged = [...jdPreferred];
+  for (const stack of companyAggregatedStacks) {
+    const key = (stack.canonical ?? stack.raw).toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(stack);
+    }
+  }
+  return merged;
+}
+
+// analyze-company 라우트는 검색으로 못 찾은 필드를 빈 문자열로 반환한다(암묵지
+// 7번과 같은 "모르면 추측 금지" 원칙) — 빈 화면 대신 명시적으로 안내
+function displayOrEmpty(text: string): string {
+  return text.trim() ? text : "검색 결과 없음";
+}
+
+function companyReportToMarkdown(companyName: string, report: CompanyReport): string {
+  const { company_info, business_analysis, environment_analysis, job_strategy, sources } =
+    report;
+  const recentPostings = job_strategy.recent_postings.length
+    ? job_strategy.recent_postings
+        .map((posting) => `- ${posting.title} (${posting.stacks.join(", ") || "스택 정보 없음"})`)
+        .join("\n")
+    : "검색 결과 없음";
+  const sourcesText = sources.length
+    ? sources.map((source) => `- [${source.title}](${source.url})`).join("\n")
+    : "출처 없음";
+
+  return `# ${companyName} 기업분석
+
+## 기업 정보
+${displayOrEmpty(company_info.general)}
+
+### 미션/비전
+${displayOrEmpty(company_info.mission_vision)}
+
+### 기술 역량
+${displayOrEmpty(company_info.tech_capability)}
+
+## 사업 분석
+
+### 사업 영역
+${displayOrEmpty(business_analysis.business_areas)}
+
+### 최근 뉴스
+${displayOrEmpty(business_analysis.recent_news)}
+
+### 재무 현황
+${displayOrEmpty(business_analysis.financials)}
+
+### 주요 채용 직무
+${business_analysis.org_roles.length ? business_analysis.org_roles.join(", ") : "검색 결과 없음"}
+
+## 환경 분석
+
+### 산업 트렌드
+${displayOrEmpty(environment_analysis.industry_trends)}
+
+### 경쟁사
+${displayOrEmpty(environment_analysis.competitors)}
+
+### SWOT
+- 강점: ${displayOrEmpty(environment_analysis.swot.strengths)}
+- 약점: ${displayOrEmpty(environment_analysis.swot.weaknesses)}
+- 기회: ${displayOrEmpty(environment_analysis.swot.opportunities)}
+- 위협: ${displayOrEmpty(environment_analysis.swot.threats)}
+
+## 채용 전략
+
+### 최근 채용공고
+${recentPostings}
+
+### 취업 준비 로드맵
+${displayOrEmpty(job_strategy.roadmap)}
+
+## 출처
+${sourcesText}
+`;
+}
+
+function downloadMarkdown(filename: string, content: string) {
+  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // PDF는 Gemini가 파일을 직접 읽고 구조화까지 한 번에 하므로(parse-applicant),
 // 텍스트만 따로 추출하는 /api/parse-resume 호출(무료 티어 일일 호출 소모)을
 // 건너뛴다. DOCX/HTML은 추출 자체가 로컬 라이브러리(mammoth/cheerio)라 무료라
@@ -144,10 +244,27 @@ export default function Home() {
   const [isSuggestingResume, setIsSuggestingResume] = useState(false);
   const [suggestionResult, setSuggestionResult] = useState<SuggestionResult | null>(null);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState("");
+  const [roleOfInterest, setRoleOfInterest] = useState("");
+  const [isAnalyzingCompany, setIsAnalyzingCompany] = useState(false);
+  const [companyReport, setCompanyReport] = useState<CompanyReport | null>(null);
+  const [companyError, setCompanyError] = useState<string | null>(null);
   const isJdUrl = URL_ONLY_PATTERN.test(jdText.trim());
   const isEmpty = !jdText.trim() || (!resumeText.trim() && !resumeFile);
   const isBlocked = isJdUrl || isEmpty;
   const bookmarkletRef = useRef<HTMLAnchorElement>(null);
+
+  // 기업분석을 실행했다면 그 회사의 "최근 채용공고 요구 스택"을 이 공고의
+  // preferred_stacks에 합쳐서 매칭에 반영한다 (2026-08-29 결정, CLAUDE.md 참고).
+  // 기업분석을 안 했으면 JD의 preferred_stacks만 그대로 쓴다
+  const effectivePreferredStacks = useMemo(
+    () =>
+      mergeCompanyStacksIntoPreferred(
+        parsedJob?.preferred_stacks ?? [],
+        companyReport?.job_strategy.aggregated_stacks
+      ),
+    [parsedJob, companyReport]
+  );
 
   // API 키가 필요 없는 순수 계산이라 서버로 보내지 않고 클라이언트에서 바로
   // 계산한다 (불필요한 네트워크 왕복 없음)
@@ -155,10 +272,10 @@ export default function Home() {
     if (!parsedJob || !parsedApplicant) return null;
     return calculateMatch(
       parsedJob.required_stacks,
-      parsedJob.preferred_stacks,
+      effectivePreferredStacks,
       parsedApplicant.stacks
     );
-  }, [parsedJob, parsedApplicant]);
+  }, [parsedJob, parsedApplicant, effectivePreferredStacks]);
 
   // 재구성 제안이 "새로 찾아낸" 스택(confirmed_gap_stacks)은 원본에 이미 있었지만
   // 05가 처음에 놓친 것뿐이라, 원본 required/preferred 목록에서 같은 raw 이름의
@@ -166,29 +283,29 @@ export default function Home() {
   // (08의 calculateMatch는 여전히 순수 함수 그대로 재사용, 하드 룰 4번 유지)
   const improvedMatch = useMemo(() => {
     if (!parsedJob || !parsedApplicant || !suggestionResult) return null;
-    const allJobStacks = [...parsedJob.required_stacks, ...parsedJob.preferred_stacks];
+    const allJobStacks = [...parsedJob.required_stacks, ...effectivePreferredStacks];
     const confirmedStacks = suggestionResult.confirmed_gap_stacks
       .map((raw) => allJobStacks.find((stack) => stack.raw === raw))
       .filter((stack): stack is CanonicalizedStack => stack !== undefined);
-    return calculateMatch(parsedJob.required_stacks, parsedJob.preferred_stacks, [
+    return calculateMatch(parsedJob.required_stacks, effectivePreferredStacks, [
       ...parsedApplicant.stacks,
       ...confirmedStacks,
     ]);
-  }, [parsedJob, parsedApplicant, suggestionResult]);
+  }, [parsedJob, parsedApplicant, suggestionResult, effectivePreferredStacks]);
 
   // 잠재 최대 점수: confirmed 여부와 무관하게 matchResult의 gap_stacks(최대 3개)를
   // 전부 채웠다고 가정 — improvedMatch와 같은 병합 패턴, 대상만 다르다
   const potentialMatch = useMemo(() => {
     if (!parsedJob || !parsedApplicant || !matchResult || !suggestionResult) return null;
-    const allJobStacks = [...parsedJob.required_stacks, ...parsedJob.preferred_stacks];
+    const allJobStacks = [...parsedJob.required_stacks, ...effectivePreferredStacks];
     const allGapStacks = matchResult.gap_stacks
       .map((raw) => allJobStacks.find((stack) => stack.raw === raw))
       .filter((stack): stack is CanonicalizedStack => stack !== undefined);
-    return calculateMatch(parsedJob.required_stacks, parsedJob.preferred_stacks, [
+    return calculateMatch(parsedJob.required_stacks, effectivePreferredStacks, [
       ...parsedApplicant.stacks,
       ...allGapStacks,
     ]);
-  }, [parsedJob, parsedApplicant, matchResult, suggestionResult]);
+  }, [parsedJob, parsedApplicant, matchResult, suggestionResult, effectivePreferredStacks]);
 
   // 개선 제안서: gap_stacks 중 11에서 "원본에 없다"고 판정된(=confirmed_gap_stacks에
   // 없는) 항목들 — resume_suggestion 생성에 애초에 입력으로 들어가지 않아 구조적으로
@@ -372,6 +489,30 @@ export default function Home() {
     }
   }
 
+  async function handleAnalyzeCompany() {
+    if (!companyName.trim()) return;
+    setIsAnalyzingCompany(true);
+    setCompanyError(null);
+    setCompanyReport(null);
+    try {
+      const res = await fetch("/api/analyze-company", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyName: companyName.trim(),
+          roleOfInterest: roleOfInterest.trim() || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error("analyze_failed");
+      const data: CompanyReport = await res.json();
+      setCompanyReport(data);
+    } catch {
+      setCompanyError("기업분석에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsAnalyzingCompany(false);
+    }
+  }
+
   async function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
     if (isBlocked) return;
@@ -411,32 +552,65 @@ export default function Home() {
     setApplicantInput(null);
     setSuggestionResult(null);
     setSuggestionError(null);
+    setCompanyName("");
+    setRoleOfInterest("");
+    setCompanyReport(null);
+    setCompanyError(null);
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-12">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-              GlobalFit
-            </span>
-            <h1 className="mt-1 text-2xl font-bold text-gray-900">
-              국내/해외 채용공고-이력서 핏 분석기
-            </h1>
-          </div>
-          <Link
-            href="/company-analysis"
-            className="shrink-0 rounded-lg bg-gray-800 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-gray-900"
-          >
-            🏢 기업분석
-          </Link>
+        <div>
+          <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+            GlobalFit
+          </span>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900">
+            국내/해외 채용공고-이력서 핏 분석기
+          </h1>
         </div>
 
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:p-8"
         >
+          <div className="flex flex-col gap-3 rounded-xl border border-gray-100 bg-gray-50/60 p-4">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="flex flex-1 flex-col gap-1.5">
+                <label
+                  htmlFor="companyName"
+                  className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
+                  회사명
+                </label>
+                <input
+                  id="companyName"
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="예: 네이버"
+                  className="rounded-lg border border-gray-200 p-2.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                />
+              </div>
+              <div className="flex flex-1 flex-col gap-1.5">
+                <label
+                  htmlFor="roleOfInterest"
+                  className="text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
+                  직무 (선택)
+                </label>
+                <input
+                  id="roleOfInterest"
+                  type="text"
+                  value={roleOfInterest}
+                  onChange={(e) => setRoleOfInterest(e.target.value)}
+                  placeholder="예: 백엔드 엔지니어"
+                  className="rounded-lg border border-gray-200 p-2.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-2">
             <label
               htmlFor="jd"
@@ -470,6 +644,185 @@ export default function Home() {
               </div>
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={handleAnalyzeCompany}
+            disabled={!companyName.trim() || isAnalyzingCompany}
+            className="self-start rounded-lg bg-gray-800 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isAnalyzingCompany ? "분석 중..." : "기업분석 보기"}
+          </button>
+
+          {companyError && (
+            <ErrorCard message={companyError} onRetry={handleAnalyzeCompany} />
+          )}
+
+          {companyReport && (
+            <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-800 shadow-sm">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                  {companyName} 기업분석
+                  {companyReport.job_strategy.personalized && " (입력한 공고 맞춤)"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadMarkdown(
+                      `${companyName}-기업분석.md`,
+                      companyReportToMarkdown(companyName, companyReport)
+                    )
+                  }
+                  className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-200"
+                >
+                  MD로 저장
+                </button>
+              </div>
+
+              <details className="rounded-lg border border-gray-100 p-3" open>
+                <summary className="cursor-pointer text-sm font-semibold text-gray-800">
+                  기업 정보
+                </summary>
+                <div className="mt-2 flex flex-col gap-2 text-sm text-gray-600">
+                  <p>{displayOrEmpty(companyReport.company_info.general)}</p>
+                  <p>
+                    <span className="font-medium text-gray-700">미션/비전:</span>{" "}
+                    {displayOrEmpty(companyReport.company_info.mission_vision)}
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-700">기술 역량:</span>{" "}
+                    {displayOrEmpty(companyReport.company_info.tech_capability)}
+                  </p>
+                </div>
+              </details>
+
+              <details className="rounded-lg border border-gray-100 p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-gray-800">
+                  사업 분석
+                </summary>
+                <div className="mt-2 flex flex-col gap-2 text-sm text-gray-600">
+                  <p>
+                    <span className="font-medium text-gray-700">사업 영역:</span>{" "}
+                    {displayOrEmpty(companyReport.business_analysis.business_areas)}
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-700">최근 뉴스:</span>{" "}
+                    {displayOrEmpty(companyReport.business_analysis.recent_news)}
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-700">재무 현황:</span>{" "}
+                    {displayOrEmpty(companyReport.business_analysis.financials)}
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-700">주요 채용 직무:</span>{" "}
+                    {companyReport.business_analysis.org_roles.join(", ") || "검색 결과 없음"}
+                  </p>
+                </div>
+              </details>
+
+              <details className="rounded-lg border border-gray-100 p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-gray-800">
+                  환경 분석
+                </summary>
+                <div className="mt-2 flex flex-col gap-2 text-sm text-gray-600">
+                  <p>
+                    <span className="font-medium text-gray-700">산업 트렌드:</span>{" "}
+                    {displayOrEmpty(companyReport.environment_analysis.industry_trends)}
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-700">경쟁사:</span>{" "}
+                    {displayOrEmpty(companyReport.environment_analysis.competitors)}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <p>
+                      <span className="font-medium text-gray-700">강점:</span>{" "}
+                      {displayOrEmpty(companyReport.environment_analysis.swot.strengths)}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-700">약점:</span>{" "}
+                      {displayOrEmpty(companyReport.environment_analysis.swot.weaknesses)}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-700">기회:</span>{" "}
+                      {displayOrEmpty(companyReport.environment_analysis.swot.opportunities)}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-700">위협:</span>{" "}
+                      {displayOrEmpty(companyReport.environment_analysis.swot.threats)}
+                    </p>
+                  </div>
+                </div>
+              </details>
+
+              <details className="rounded-lg border border-gray-100 p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-gray-800">
+                  채용 전략
+                </summary>
+                <div className="mt-2 flex flex-col gap-3 text-sm text-gray-600">
+                  <div>
+                    <p className="mb-1 font-medium text-gray-700">최근 채용공고</p>
+                    {companyReport.job_strategy.recent_postings.length === 0 ? (
+                      <p>검색 결과 없음</p>
+                    ) : (
+                      <ul className="flex flex-col gap-1">
+                        {companyReport.job_strategy.recent_postings.map((posting, i) => (
+                          <li key={i}>
+                            {posting.title}
+                            {posting.stacks.length > 0 && (
+                              <span className="text-gray-400"> — {posting.stacks.join(", ")}</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  {companyReport.job_strategy.aggregated_stacks.length > 0 && (
+                    <div>
+                      <p className="mb-1 font-medium text-gray-700">
+                        최근 채용 스택 (매칭 시 우대 스택에 반영됨)
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {companyReport.job_strategy.aggregated_stacks.map((stack) => (
+                          <span
+                            key={stack.raw}
+                            className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600"
+                          >
+                            {stack.raw}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <p className="mb-1 font-medium text-gray-700">취업 준비 로드맵</p>
+                    <p>{displayOrEmpty(companyReport.job_strategy.roadmap)}</p>
+                  </div>
+                </div>
+              </details>
+
+              {companyReport.sources.length > 0 && (
+                <div className="border-t border-gray-100 pt-3">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    출처
+                  </p>
+                  <ul className="flex flex-col gap-1 text-xs text-gray-500">
+                    {companyReport.sources.map((source, i) => (
+                      <li key={i}>
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline hover:text-gray-700"
+                        >
+                          {source.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <label
