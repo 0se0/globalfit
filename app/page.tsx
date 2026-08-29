@@ -570,7 +570,14 @@ export default function Home() {
                   id="companyName"
                   type="text"
                   value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
+                  onChange={(e) => {
+                    setCompanyName(e.target.value);
+                    // 회사명이 바뀌면 이전 기업분석 결과는 더 이상 유효하지 않음 —
+                    // 그대로 두면 매칭 점수가 화면에 보이는 회사명과 다른 회사의
+                    // aggregated_stacks로 계산되는 상황이 생길 수 있음
+                    setCompanyReport(null);
+                    setCompanyError(null);
+                  }}
                   placeholder="예: 네이버"
                   className="rounded-lg border border-gray-200 p-2.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                 />
@@ -586,7 +593,11 @@ export default function Home() {
                   id="roleOfInterest"
                   type="text"
                   value={roleOfInterest}
-                  onChange={(e) => setRoleOfInterest(e.target.value)}
+                  onChange={(e) => {
+                    setRoleOfInterest(e.target.value);
+                    setCompanyReport(null);
+                    setCompanyError(null);
+                  }}
                   placeholder="예: 백엔드 엔지니어"
                   className="rounded-lg border border-gray-200 p-2.5 text-sm shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                 />
