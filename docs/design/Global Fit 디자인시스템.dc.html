@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"><style>body{margin:0;background:#fff;color:#0e0f0d;font-family:'Gothic A1','Outfit',system-ui,sans-serif;-webkit-font-smoothing:antialiased;word-break:keep-all;text-wrap:pretty}a{color:#2f7a3f}a:hover{color:#245f31}h1,h2,h3{margin:0;word-break:keep-all}p{margin:0;word-break:keep-all}
+@media (max-width:900px){[data-r="shell"]{padding:14px 14px 48px !important}[data-r="g4"]{grid-template-columns:1fr 1fr !important}[data-r="g3"]{grid-template-columns:1fr !important}[data-r="g2"]{grid-template-columns:1fr !important}[data-r="row"]{flex-direction:column !important;align-items:flex-start !important;gap:8px !important}[data-r="row"]>span:first-child{width:auto !important}[data-r="h1"]{font-size:36px !important}}
+@media (max-width:560px){[data-r="g4"]{grid-template-columns:1fr !important}}</style></helmet>
+
+<div data-r="shell" style="max-width:1080px;margin:0 auto;padding:56px 28px 96px;display:flex;flex-direction:column;gap:56px">
+
+  <header style="display:flex;flex-direction:column;gap:14px;border-bottom:1px solid #e6e7e3;padding-bottom:30px">
+    <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8079">Design System · v2 · FluxCard 레퍼런스 기준</div>
+    <h1 data-r="h1" style="font-size:44px;font-weight:700;letter-spacing:-.035em;line-height:1.05">Global Fit</h1>
+    <p style="max-width:54ch;font-size:15px;line-height:1.7;color:#7c8079">거의 검정에 가까운 다크 면, 행동을 부르는 라임 하나, 성과를 말하는 딥그린 그라데이션. 나머지는 흰 바탕과 얇은 회색 선으로 비워 둡니다. 제목은 크고 굵게, 두 번째 문장은 연회색으로 떨어뜨려 한 문장에 두 톤을 씁니다.</p>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <h2 style="font-size:22px;font-weight:700;letter-spacing:-.02em">색</h2>
+    <div data-r="g4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+      <div style="border:1px solid #e6e7e3;border-radius:12px;overflow:hidden"><div style="height:80px;background:#0e0f0d"></div><div style="padding:13px 15px"><div style="font-size:13px;font-weight:700">Ink</div><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-top:3px">#0E0F0D · 다크 면·본문</div></div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;overflow:hidden"><div style="height:80px;background:#c7f04a"></div><div style="padding:13px 15px"><div style="font-size:13px;font-weight:700">Lime</div><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-top:3px">#C7F04A · 주버튼 전용</div></div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;overflow:hidden"><div style="height:80px;background:linear-gradient(150deg,#2f7a3f,#1c5228)"></div><div style="padding:13px 15px"><div style="font-size:13px;font-weight:700">Deep Green</div><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-top:3px">#2F7A3F → #1C5228 · 점수·지표</div></div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;overflow:hidden"><div style="height:80px;background:#4f9e2f"></div><div style="padding:13px 15px"><div style="font-size:13px;font-weight:700">Leaf <span style="font-weight:400;color:#7c8079">브랜드색</span></div><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-top:3px">#4F9E2F · 워드마크·초록 글자</div></div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;overflow:hidden"><div style="height:80px;background:#fff;border-bottom:1px solid #e6e7e3"></div><div style="padding:13px 15px"><div style="font-size:13px;font-weight:700">Surface</div><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-top:3px">#FFFFFF · 기본 바탕</div></div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;overflow:hidden"><div style="height:80px;background:#7c8079"></div><div style="padding:13px 15px"><div style="font-size:13px;font-weight:700">Muted</div><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-top:3px">#7C8079 · 보조 텍스트</div></div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;overflow:hidden"><div style="height:80px;background:#c4c7c0"></div><div style="padding:13px 15px"><div style="font-size:13px;font-weight:700">Ghost</div><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-top:3px">#C4C7C0 · 제목 두 번째 톤</div></div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;overflow:hidden"><div style="height:80px;background:#f1fadd;border-bottom:1px solid #d9eeae"></div><div style="padding:13px 15px"><div style="font-size:13px;font-weight:700">Lime Wash</div><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-top:3px">#F1FADD / 선 #D9EEAE</div></div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;overflow:hidden"><div style="height:80px;background:#fbeeea;border-bottom:1px solid #eedad4"></div><div style="padding:13px 15px"><div style="font-size:13px;font-weight:700">Alert</div><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-top:3px">#B03A2A · 에러 전용</div></div></div>
+    </div>
+    <div style="font-size:13px;color:#7c8079">선은 #E6E7E3 하나. 라임(#C7F04A)은 “누르는 것”에만, 딥그린(#2F7A3F)은 “결과 숫자”에만, 리프(#4F9E2F)는 워드마크와 초록 글자에 씁니다 — 라임은 밝은 배경에서 글자로 쓰지 않습니다.</div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <h2 style="font-size:22px;font-weight:700;letter-spacing:-.02em">타입 — Gothic A1 (한글·본문) + Outfit (숫자·라벨)</h2>
+    <div style="border:1px solid #e6e7e3;border-radius:14px;padding:26px;display:flex;flex-direction:column;gap:20px">
+      <div data-r="row" style="display:flex;gap:22px;align-items:baseline"><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;width:158px;flex:none">Hero / 60 · 700 · -3.5%</span><span style="font-size:44px;font-weight:700;letter-spacing:-.035em;line-height:1.06">공고에 맞는 이력서는 따로 있습니다.</span></div>
+      <div data-r="row" style="display:flex;gap:22px;align-items:baseline;border-top:1px solid #eef0ec;padding-top:20px"><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;width:158px;flex:none">Section / 40 · 700 · 두 톤</span><span style="font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.2">문서 하나로 끝내는<span style="color:#c4c7c0"> 지원 준비 전 과정.</span></span></div>
+      <div data-r="row" style="display:flex;gap:22px;align-items:baseline;border-top:1px solid #eef0ec;padding-top:20px"><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;width:158px;flex:none">Card title / 17 · 700</span><span style="font-size:17px;font-weight:700;letter-spacing:-.01em">요구 스택 대조</span></div>
+      <div data-r="row" style="display:flex;gap:22px;align-items:baseline;border-top:1px solid #eef0ec;padding-top:20px"><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;width:158px;flex:none">Body / 14 · 400 · 1.7</span><span style="font-size:14px;line-height:1.7;max-width:44ch;color:#7c8079">공고에서 뽑은 스택과 내 문서의 스택을 붙여놓고 보유·부족을 갈라줍니다.</span></div>
+      <div data-r="row" style="display:flex;gap:22px;align-items:baseline;border-top:1px solid #eef0ec;padding-top:20px"><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;width:158px;flex:none">Label / Outfit 11 · .16em</span><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8079">product shot — 매칭 리포트</span></div>
+      <div data-r="row" style="display:flex;gap:22px;align-items:baseline;border-top:1px solid #eef0ec;padding-top:20px"><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;width:158px;flex:none">Metric / Outfit 32~64 · 700</span><span style="font-family:'Outfit',system-ui,sans-serif;font-size:52px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#2f7a3f">+12점</span></div>
+      <div style="border-top:1px solid #eef0ec;padding-top:16px;font-size:13px;color:#7c8079">한글은 <b style="font-weight:700;color:#0e0f0d">word-break: keep-all</b> 고정 — 단어 중간에서 줄이 끊기지 않게.</div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <h2 style="font-size:22px;font-weight:700;letter-spacing:-.02em">형태 · 반응형</h2>
+    <div data-r="g4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:18px"><div style="font-size:13px;font-weight:700;margin-bottom:7px">모서리</div><div style="font-size:13px;line-height:1.6;color:#7c8079">섹션 블록 18 · 카드 12~14 · 버튼 9 · 태그 7</div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:18px"><div style="font-size:13px;font-weight:700;margin-bottom:7px">선·그림자</div><div style="font-size:13px;line-height:1.6;color:#7c8079">1px #E6E7E3만. 그림자 없음.</div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:18px"><div style="font-size:13px;font-weight:700;margin-bottom:7px">폭</div><div style="font-size:13px;line-height:1.6;color:#7c8079">최대 1280 · 데스크톱 2단 기준</div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:18px"><div style="font-size:13px;font-weight:700;margin-bottom:7px">중단점</div><div style="font-size:13px;line-height:1.6;color:#7c8079">900 이하 1단 · 560 이하 1열·버튼 풀폭</div></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <h2 style="font-size:22px;font-weight:700;letter-spacing:-.02em">컴포넌트</h2>
+
+    <div style="border:1px solid #e6e7e3;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8079">버튼</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <span style="background:#c7f04a;color:#0e0f0d;font-size:14px;font-weight:600;border-radius:9px;padding:13px 22px">무료로 진단하기 →</span>
+        <span style="border:1px solid #e6e7e3;color:#0e0f0d;font-size:14px;font-weight:500;border-radius:9px;padding:13px 22px">기능 살펴보기</span>
+        <span style="background:#0e0f0d;color:#fff;font-size:14px;font-weight:500;border-radius:9px;padding:13px 22px">재시도</span>
+        <span style="border:1px solid #e6e7e3;background:#f4f5f2;color:#a8ada4;font-size:14px;font-weight:500;border-radius:9px;padding:13px 22px">비활성</span>
+      </div>
+      <div style="font-size:13px;color:#7c8079">다크 면 위에서 보조 버튼은 테두리 #4A4F47 + 흰 글자.</div>
+    </div>
+
+    <div data-r="g2" style="display:grid;grid-template-columns:1.2fr 1fr;gap:14px;align-items:start">
+      <div style="border:1px solid #e6e7e3;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8079">입력</div>
+        <div style="display:flex;flex-direction:column;gap:7px"><label style="font-size:13px;font-weight:600">회사명</label><input placeholder="예: 주식회사 메리디안" style="font-family:inherit;font-size:14px;padding:12px 13px;border:1px solid #e6e7e3;border-radius:9px;outline:none;color:#0e0f0d" style-focus="border-color:#2f7a3f"></input></div>
+        <div style="display:flex;flex-direction:column;gap:7px"><label style="font-size:13px;font-weight:600">공고 본문</label><textarea rows="3" placeholder="공고 본문을 붙여넣으세요" style="font-family:inherit;font-size:14px;line-height:1.7;padding:12px 13px;border:1px solid #e6e7e3;border-radius:9px;outline:none;resize:vertical;color:#0e0f0d" style-focus="border-color:#2f7a3f"></textarea></div>
+        <div style="border:1px dashed #d3d6d0;border-radius:9px;padding:16px;background:#fafbf8;display:flex;align-items:center;gap:12px"><span style="border:1px solid #e6e7e3;background:#fff;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:500">파일 선택</span><span style="font-size:13px;color:#7c8079">PDF · DOCX · HTML · 최대 10MB</span></div>
+      </div>
+      <div style="border:1px solid #e6e7e3;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8079">태그 · 지표</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:12px;padding:6px 11px;border-radius:7px;border:1px solid #e6e7e3">React</span>
+          <span style="font-size:12px;padding:6px 11px;border-radius:7px;border:1px solid #d9eeae;background:#f1fadd;color:#2f7a3f">보유 · TypeScript</span>
+          <span style="font-size:12px;padding:6px 11px;border-radius:7px;border:1px solid #eedad4;background:#fbeeea;color:#b03a2a">부족 · GraphQL</span>
+        </div>
+        <div style="border-radius:12px;padding:20px;background:linear-gradient(150deg,#2f7a3f,#1c5228);color:#fff;display:flex;flex-direction:column;gap:5px">
+          <div style="width:30px;height:30px;border-radius:8px;background:rgba(199,240,74,.22);border:1px solid rgba(199,240,74,.45);margin-bottom:8px"></div>
+          <div style="font-family:'Outfit',system-ui,sans-serif;font-size:32px;font-weight:700;letter-spacing:-.02em">72</div>
+          <div style="font-size:13px;color:#cfe6cf">매칭 점수 · 100점 기준</div>
+        </div>
+        <div style="height:8px;background:#eaece7;border-radius:4px;overflow:hidden"><div style="width:72%;height:100%;background:#2f7a3f"></div></div>
+      </div>
+    </div>
+
+    <div data-r="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="border:1px dashed #d3d6d0;border-radius:14px;padding:24px;background:#fafbf8;display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+        <div style="font-size:15px;font-weight:700">빈 상태</div>
+        <div style="font-size:13px;line-height:1.65;color:#7c8079">할 일 한 문장 + 버튼 하나. 이유를 설명하고 다음 행동은 딱 하나만.</div>
+        <span style="background:#c7f04a;color:#0e0f0d;font-size:13px;font-weight:600;border-radius:9px;padding:10px 16px">이력서 재구성 제안 보기</span>
+      </div>
+      <div style="border:1px solid #eedad4;background:#fbeeea;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+        <div style="font-size:15px;font-weight:700;color:#b03a2a">에러</div>
+        <div style="font-size:13px;line-height:1.65">무엇이 실패했는지 한 줄 + 다음 수단 2개. 해당 섹션에만 표시하고 이미 얻은 결과는 지우지 않습니다.</div>
+        <div style="display:flex;gap:8px"><span style="background:#0e0f0d;color:#fff;font-size:13px;font-weight:500;border-radius:9px;padding:10px 15px">재시도</span><span style="border:1px solid #e6e7e3;background:#fff;font-size:13px;font-weight:500;border-radius:9px;padding:10px 15px">직접 입력</span></div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079">suggestionError · empty_response</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid #e6e7e3;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8079">로딩</div>
+      <div data-r="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="display:flex;flex-direction:column;gap:9px"><div style="height:11px;background:#eef0ec;border-radius:3px;width:92%"></div><div style="height:11px;background:#eef0ec;border-radius:3px;width:74%"></div><div style="height:11px;background:#eef0ec;border-radius:3px;width:84%"></div></div>
+        <div style="display:flex;flex-direction:column;gap:10px"><div style="height:6px;background:#eaece7;border-radius:3px;overflow:hidden"><div style="width:45%;height:100%;background:#2f7a3f"></div></div><div style="font-size:13px;color:#7c8079">단계 문구 + 진행바. 스켈레톤은 실제 결과와 같은 높이로.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px;border-top:1px solid #e6e7e3;padding-top:28px">
+    <h2 style="font-size:22px;font-weight:700;letter-spacing:-.02em">지금까지 만든 것</h2>
+    <div data-r="g3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:7px"><div style="font-size:14px;font-weight:700"><a href="./Global%20Fit%20%EC%9B%B9%EC%82%AC%EC%9D%B4%ED%8A%B8.dc.html">웹사이트 (랜딩)</a></div><div style="font-size:13px;line-height:1.6;color:#7c8079">이 시스템 적용 완료 · 반응형 완료 · 이미지 자리만 비어 있음</div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:7px"><div style="font-size:14px;font-weight:700"><a href="./Global%20Fit%20%ED%99%94%EB%A9%B4%20v2.dc.html">앱 화면 v2 (16장)</a></div><div style="font-size:13px;line-height:1.6;color:#7c8079">4화면 × 정상·로딩·빈·에러 · <b style="color:#b03a2a;font-weight:600">이전 팔레트</b> — 이 시스템으로 교체 대기</div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:7px"><div style="font-size:14px;font-weight:700"><a href="./Global%20Fit%20%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84.dc.html">회색조 와이어프레임 (17장)</a></div><div style="font-size:13px;line-height:1.6;color:#7c8079">구조 확정용 원본 · 그대로 보존</div></div>
+    </div>
+  </section>
+</div>
+
+</x-dc>
+</body>
+</html>

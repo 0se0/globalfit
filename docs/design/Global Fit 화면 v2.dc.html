@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"><style>body{margin:0;background:#ffffff;color:#0e0f0d;font-family:'Gothic A1','Outfit',system-ui,sans-serif;-webkit-font-smoothing:antialiased;word-break:keep-all;text-wrap:pretty}a{color:#2f7a3f;text-decoration:none}a:hover{color:#245f31;text-decoration:underline}.dv-turn{max-width:1240px;margin:0 auto;padding:76px 30px 64px;border-bottom:1px solid #e6e7e3}.dv-thd{display:flex;align-items:center;gap:14px;margin:0 0 30px}.dv-tid{font-family:'Outfit',system-ui,sans-serif;font-size:13px;font-weight:600;padding:7px 14px;background:#c7f04a;color:#0e0f0d;border-radius:9px;text-decoration:none}.dv-tid:hover{color:#0e0f0d;text-decoration:none}.dv-tname{font-size:30px;font-weight:700;letter-spacing:-.03em}.dv-opts{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}.dv-oid{font-family:'Outfit',system-ui,sans-serif;font-size:11px;font-weight:500;padding:3px 7px;background:#e6e7e3;color:#0e0f0d;border-radius:5px;text-decoration:none}.dv-oid:hover{color:#0e0f0d;text-decoration:none}.dv-opt:target .dv-oid{background:#2f7a3f;color:#fff}.dv-olabel{display:flex;align-items:baseline;gap:9px;font-size:12px;color:#7c8079}.dv-card{background:#fafbf8;border:1px solid #e6e7e3;border-radius:18px;overflow:hidden}.dv-next{margin:24px 0 0;font-size:13px;color:#7c8079}</style></helmet>
+
+<section class="dv-turn" id="t5">
+<div class="dv-thd"><a class="dv-tid" href="#t5">5</a><span class="dv-tname">① 입력 화면 <span style="font-family:'Outfit',system-ui,sans-serif;font-weight:400;color:#7c8079">/</span> — 시각 디자인</span></div>
+<div class="dv-opts">
+
+  <div class="dv-opt" id="5a"><div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a>정상 · 입력 완료</div>
+  <div class="dv-card" style="width:1180px">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 28px;background:#fafbf8;border-bottom:1px solid #e6e7e3">
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font-size:17px;font-weight:700;letter-spacing:-.02em;color:#4f9e2f">Global Fit</span><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8079">공고 × 내 문서</span></div>
+      <div style="display:flex;gap:10px;align-items:center"><span style="font-size:13px;color:#7c8079">기업분석</span><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:9px;padding:7px 13px">저장한 공고</span></div>
+    </div>
+    <div style="padding:36px 28px 32px;display:flex;flex-direction:column;gap:28px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <h1 style="margin:0;font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1.1">이 공고에 내가 얼마나 맞는지<span style="color:#c4c7c0"> 확인하기</span></h1>
+        <p style="margin:0;font-size:14px;line-height:1.65;color:#7c8079;max-width:56ch">공고와 이력서를 넣으면 요구 스택 대비 매칭 점수, 제출 방법, 부족한 부분을 뽑아냅니다. 자소서·포트폴리오를 함께 넣으면 세 문서 모두 재구성 제안을 받습니다.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">STEP 01 — 채용공고</div><span style="font-size:12px;font-weight:600;color:#2f7a3f">입력 완료</span></div>
+          <div style="display:flex;gap:0;border:1px solid #e6e7e3;border-radius:8px;overflow:hidden;width:fit-content"><span style="font-size:13px;font-weight:500;padding:7px 14px;background:#0e0f0d;color:#fff">텍스트 붙여넣기</span><span style="font-size:13px;padding:7px 14px;color:#7c8079;background:#fff">URL로 가져오기</span></div>
+          <div style="border:1px solid #e6e7e3;border-radius:8px;padding:13px;font-size:13px;line-height:1.7;color:#0e0f0d;height:132px;overflow:hidden">[채용공고] 프론트엔드 엔지니어 (3년 이상)<br><span style="color:#7c8079">· 담당 업무: 웹 서비스 프론트엔드 개발, 디자인 시스템 유지<br>· 자격 요건: React, TypeScript 실무 경험 3년 이상<br>· 우대 사항: Next.js, GraphQL, 테스트 자동화 경험<br>· 근무지: 서울 강남 / 주 2회 재택</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#7c8079"><span>1,284자</span><span>지우기</span></div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">STEP 02 — 이력서</div><span style="font-size:12px;font-weight:600;color:#2f7a3f">파일 추출 완료</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #e6e7e3;border-radius:8px;padding:12px 14px;background:#fafbf8">
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:500">resume_2026.pdf</span><span style="font-size:12px;color:#7c8079">4페이지 · 텍스트 3,102자 추출</span></div>
+            <span style="font-size:13px;color:#7c8079">교체</span>
+          </div>
+          <div style="border:1px solid #e6e7e3;border-radius:8px;padding:13px;font-size:13px;line-height:1.7;color:#7c8079;height:132px;overflow:hidden">프론트엔드 엔지니어 · 2년<br>React / TypeScript / Node.js<br>· A사 웹 리뉴얼: 컴포넌트 40여 개 재작성<br>· 사내 관리도구: 목록 렌더 성능 개선<br>· 개인 프로젝트: 정적 블로그 파이프라인</div>
+          <div style="font-size:12px;color:#7c8079">PDF · DOCX · HTML · 최대 10MB (HWP 미지원)</div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">STEP 03 — 자소서 · 포트폴리오</div><span style="font-size:12px;color:#7c8079">선택 · 넣으면 함께 재구성됩니다</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="display:flex;flex-direction:column;gap:7px"><label style="font-size:13px;font-weight:500">자소서</label><div style="border:1px solid #e6e7e3;border-radius:8px;padding:12px;font-size:13px;line-height:1.7;color:#7c8079;height:64px;overflow:hidden">사용자가 겪는 반복 작업을 줄이는 일에 흥미를 느껴…</div></div>
+          <div style="display:flex;flex-direction:column;gap:7px"><label style="font-size:13px;font-weight:500">포트폴리오</label><div style="border:1px solid #e6e7e3;border-radius:8px;padding:12px;font-size:13px;line-height:1.7;color:#a8ada4;height:64px;overflow:hidden">링크 또는 설명을 붙여넣으세요</div></div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e6e7e3;padding-top:20px">
+        <span style="font-size:13px;color:#7c8079">공고·이력서 확인됨 · 분석에 약 30초</span>
+        <div style="display:flex;gap:10px"><span style="font-size:14px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:11px 18px">초기화</span><span style="font-size:14px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:11px 22px">매칭 결과 보기</span></div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="5b"><div class="dv-olabel"><a class="dv-oid" href="#5b">5b</a>로딩 · URL 가져오기 + 파일 추출</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;font-size:16px;font-weight:700;letter-spacing:-.02em;color:#4f9e2f">Global Fit</div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:13px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">STEP 01 — 채용공고</div>
+        <div style="display:flex;gap:8px"><div style="flex:1;border:1px solid #e6e7e3;border-radius:8px;padding:11px 12px;font-size:13px;color:#7c8079;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">https://careers.example.com/jobs/1234</div><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#f4f5f2;color:#a8ada4;border-radius:8px;padding:11px 14px">가져오는 중</span></div>
+        <div style="height:6px;background:#eaece7;border-radius:3px;overflow:hidden"><div style="width:45%;height:100%;background:#2f7a3f"></div></div>
+        <div style="font-size:12px;color:#7c8079">공고 본문을 읽고 있습니다 · 최대 15초</div>
+        <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #eef0ec;padding-top:13px"><div style="height:10px;background:#eef0ec;border-radius:3px;width:92%"></div><div style="height:10px;background:#eef0ec;border-radius:3px;width:78%"></div><div style="height:10px;background:#eef0ec;border-radius:3px;width:86%"></div><div style="height:10px;background:#eef0ec;border-radius:3px;width:54%"></div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:13px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">STEP 02 — 이력서</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="font-weight:500">resume_2026.pdf</span><span style="color:#7c8079">텍스트 추출 중</span></div>
+        <div style="height:6px;background:#eaece7;border-radius:3px;overflow:hidden"><div style="width:72%;height:100%;background:#2f7a3f"></div></div>
+        <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #eef0ec;padding-top:13px"><div style="height:10px;background:#eef0ec;border-radius:3px;width:88%"></div><div style="height:10px;background:#eef0ec;border-radius:3px;width:62%"></div></div>
+      </div>
+      <span style="font-size:14px;font-weight:500;border:1px solid #e6e7e3;background:#f4f5f2;color:#a8ada4;border-radius:8px;padding:12px;text-align:center">매칭 결과 보기</span>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="5c"><div class="dv-olabel"><a class="dv-oid" href="#5c">5c</a>빈 상태 · 첫 방문</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;font-size:16px;font-weight:700;letter-spacing:-.02em;color:#4f9e2f">Global Fit</div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;flex-direction:column;gap:6px"><h2 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">공고와 이력서,<span style="color:#c4c7c0"> 둘만 있으면 됩니다</span></h2><p style="margin:0;font-size:13px;line-height:1.65;color:#7c8079">둘 다 채우면 아래 버튼이 열립니다. URL만 넣고 “가져오기”를 누르지 않으면 아직 비어 있는 상태입니다.</p></div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">STEP 01 — 채용공고</div>
+        <div style="border:1px dashed #d3d6d0;border-radius:8px;padding:22px;text-align:center;background:#fafbf8"><div style="font-size:13px;color:#7c8079;line-height:1.6">공고 본문을 붙여넣거나<br>URL을 넣고 가져오기</div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">STEP 02 — 이력서</div>
+        <div style="border:1px dashed #d3d6d0;border-radius:8px;padding:22px;text-align:center;background:#fafbf8;display:flex;flex-direction:column;gap:10px;align-items:center"><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:8px 14px">파일 선택</span><span style="font-size:12px;color:#7c8079">또는 텍스트로 붙여넣기 · PDF/DOCX/HTML</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:500;border:1px solid #e6e7e3;background:#f4f5f2;color:#a8ada4;border-radius:8px;padding:12px;text-align:center">매칭 결과 보기</span><span style="font-size:12px;color:#7c8079;text-align:center">공고와 이력서를 모두 입력해 주세요</span></div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="5d"><div class="dv-olabel"><a class="dv-oid" href="#5d">5d</a>에러 · fetchError + fileError</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;font-size:16px;font-weight:700;letter-spacing:-.02em;color:#4f9e2f">Global Fit</div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:13px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">STEP 01 — 채용공고</div>
+        <div style="border:1px solid #eedad4;background:#fbeeea;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:9px">
+          <div style="font-size:13px;font-weight:600;color:#b03a2a">이 URL에서 공고를 가져오지 못했습니다</div>
+          <div style="font-size:13px;line-height:1.6;color:#0e0f0d">로그인이 필요한 페이지이거나 크롤링이 막혀 있습니다. 공고 본문을 직접 붙여넣으면 그대로 진행됩니다.</div>
+          <div style="display:flex;gap:8px;margin-top:2px"><span style="font-size:13px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:8px 13px">다시 시도</span><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:8px 13px">직접 붙여넣기</span></div>
+        </div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079">fetchError · 403</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:13px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">STEP 02 — 이력서</div>
+        <div style="border:1px solid #eedad4;background:#fbeeea;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:9px">
+          <div style="font-size:13px;font-weight:600;color:#b03a2a">resume.hwp — 읽을 수 없는 형식</div>
+          <div style="font-size:13px;line-height:1.6;color:#0e0f0d">HWP는 지원하지 않습니다. PDF로 저장해 다시 올리거나 내용을 붙여넣어 주세요.</div>
+          <div style="display:flex;gap:8px;margin-top:2px"><span style="font-size:13px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:8px 13px">다른 파일 선택</span><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:8px 13px">텍스트로 붙여넣기</span></div>
+        </div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079">fileError · unsupported_extension</div>
+      </div>
+      <span style="font-size:14px;font-weight:500;border:1px solid #e6e7e3;background:#f4f5f2;color:#a8ada4;border-radius:8px;padding:12px;text-align:center">매칭 결과 보기</span>
+    </div>
+  </div></div>
+</div>
+<p class="dv-next">이어서 볼 것: “<a class="dv-oid" href="#5a">5a</a>를 1단(모바일 폭)으로” · “STEP 03을 접이식으로” · “랜딩 페이지도 이 시스템으로”</p>
+</section>
+
+<section class="dv-turn" id="t6">
+<div class="dv-thd"><a class="dv-tid" href="#t6">6</a><span class="dv-tname">② 매칭 결과 <span style="font-family:'Outfit',system-ui,sans-serif;font-weight:400;color:#7c8079">/ 입력 아래 이어서</span></span></div>
+<div class="dv-opts">
+
+  <div class="dv-opt" id="6a"><div class="dv-olabel"><a class="dv-oid" href="#6a">6a</a>정상</div>
+  <div class="dv-card" style="width:1180px">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 28px;background:#fafbf8;border-bottom:1px solid #e6e7e3"><span style="font-size:13px;color:#7c8079">↑ ① 입력 (접힘) · 프론트엔드 엔지니어 / resume_2026.pdf</span><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:9px;padding:7px 13px">입력 수정</span></div>
+    <div style="padding:32px 28px;display:flex;flex-direction:column;gap:24px">
+      <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:20px">
+        <div style="background:linear-gradient(150deg,#2f7a3f,#1c5228);color:#fff;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:16px">
+          <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#a9d3a4">MATCH SCORE</div>
+          <div style="display:flex;align-items:flex-end;gap:16px"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:64px;font-weight:700;letter-spacing:-.03em;line-height:.95;color:#c7f04a">72</div><div style="font-size:15px;color:#cfe6cf;padding-bottom:10px">/ 100</div></div>
+          <div style="height:8px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden"><div style="width:72%;height:100%;background:#c7f04a"></div></div>
+          <div style="font-size:13px;line-height:1.65;color:#cfe6cf">요구 스택 8개 중 5개 보유. 하드 룰 기반 계산이라 같은 입력이면 항상 같은 점수가 나옵니다.</div>
+          <div style="display:flex;gap:14px;border-top:1px solid rgba(255,255,255,.16);padding-top:14px">
+            <div style="flex:1"><div style="font-size:12px;color:#a9d3a4;margin-bottom:3px">제출 방법</div><div style="font-size:13px;font-weight:500">자사 채용 페이지</div></div>
+            <div style="flex:1"><div style="font-size:12px;color:#a9d3a4;margin-bottom:3px">필요 서류</div><div style="font-size:13px;font-weight:500">이력서 · 자소서 · 포트폴리오</div></div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+          <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">스택 대조</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;color:#7c8079">보유 · 5</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap"><span style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #d9eeae;background:#f1fadd;color:#2f7a3f">React</span><span style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #d9eeae;background:#f1fadd;color:#2f7a3f">TypeScript</span><span style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #d9eeae;background:#f1fadd;color:#2f7a3f">Node.js</span><span style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #d9eeae;background:#f1fadd;color:#2f7a3f">Git</span><span style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #d9eeae;background:#f1fadd;color:#2f7a3f">REST</span></div>
+            <div style="font-size:12px;color:#7c8079;margin-top:6px">부족 · 3</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap"><span style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #eedad4;background:#fbeeea;color:#b03a2a">Next.js</span><span style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #eedad4;background:#fbeeea;color:#b03a2a">GraphQL</span><span style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #eedad4;background:#fbeeea;color:#b03a2a">테스트 자동화</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;overflow:hidden">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #eef0ec"><span style="font-size:14px;font-weight:600">공고 분석</span><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e6e7e3;color:#7c8079">parse-job</span></div>
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px;font-size:13px">
+            <div style="display:flex;gap:12px"><span style="width:70px;flex:none;color:#7c8079">직무</span><span>프론트엔드 엔지니어 · 3년 이상</span></div>
+            <div style="display:flex;gap:12px"><span style="width:70px;flex:none;color:#7c8079">근무지</span><span>서울 강남 · 주 2회 재택</span></div>
+            <div style="display:flex;gap:12px"><span style="width:70px;flex:none;color:#7c8079">고용형태</span><span>정규직</span></div>
+            <div style="display:flex;gap:12px"><span style="width:70px;flex:none;color:#7c8079">마감</span><span>2026-09-12</span></div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;overflow:hidden">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #eef0ec"><span style="font-size:14px;font-weight:600">지원서류 분석</span><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e6e7e3;color:#7c8079">parse-applicant</span></div>
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px;font-size:13px">
+            <div style="display:flex;gap:12px"><span style="width:70px;flex:none;color:#7c8079">경력</span><span>2년 1개월 · 프로젝트 4건</span></div>
+            <div style="display:flex;gap:12px"><span style="width:70px;flex:none;color:#7c8079">강점</span><span>컴포넌트 설계 · 성능 개선</span></div>
+            <div style="display:flex;gap:12px"><span style="width:70px;flex:none;color:#7c8079">문서</span><span>이력서 · 자소서</span></div>
+            <div style="display:flex;gap:12px"><span style="width:70px;flex:none;color:#7c8079">누락</span><span style="color:#b03a2a">포트폴리오</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #eef0ec"><span style="font-size:14px;font-weight:600">판단 지점</span><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #e6e7e3;color:#7c8079">judge-job</span></div>
+        <div style="padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="border:1px solid #eef0ec;border-radius:8px;padding:14px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">지원 가능 — 가능</div><div style="font-size:13px;line-height:1.6;color:#7c8079">경력 2년으로 “3년 이상”에 미달하지만 우대 조건 충족분이 있어 서류 통과 여지가 있습니다.</div></div>
+          <div style="border:1px solid #eef0ec;border-radius:8px;padding:14px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">비자·체류 — 확인 필요</div><div style="font-size:13px;line-height:1.6;color:#7c8079">공고에 스폰서십 언급이 없습니다. 해외 지원이면 채용 담당자 확인이 필요합니다.</div></div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e6e7e3;padding-top:20px"><span style="font-size:13px;color:#7c8079">부족한 3개를 반영해 문서를 다시 쓰면 점수가 올라갑니다</span><span style="font-size:14px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:11px 22px">이력서 재구성 제안 보기</span></div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="6b"><div class="dv-olabel"><a class="dv-oid" href="#6b">6b</a>로딩 · 파싱 3건</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;font-size:13px;color:#7c8079">↑ ① 입력 (접힘)</div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:14px;font-weight:600">문서를 읽고 있습니다</div>
+        <div style="display:flex;flex-direction:column;gap:12px;font-size:13px">
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between"><span>공고 분석</span><span style="font-weight:600;color:#2f7a3f">완료</span></div><div style="height:5px;background:#eaece7;border-radius:3px;overflow:hidden"><div style="width:100%;height:100%;background:#2f7a3f"></div></div></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between"><span>지원서류 분석</span><span style="color:#7c8079">진행 중</span></div><div style="height:5px;background:#eaece7;border-radius:3px;overflow:hidden"><div style="width:55%;height:100%;background:#2f7a3f"></div></div></div>
+          <div style="display:flex;flex-direction:column;gap:6px;color:#a8ada4"><div style="display:flex;justify-content:space-between"><span>판단 지점</span><span>대기</span></div><div style="height:5px;background:#eaece7;border-radius:3px"></div></div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px">
+        <div style="height:11px;background:#eef0ec;border-radius:3px;width:44%"></div>
+        <div style="height:46px;background:#eef0ec;border-radius:6px;width:110px"></div>
+        <div style="height:8px;background:#eef0ec;border-radius:4px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><div style="height:24px;width:70px;background:#eef0ec;border-radius:6px"></div><div style="height:24px;width:88px;background:#eef0ec;border-radius:6px"></div><div style="height:24px;width:64px;background:#eef0ec;border-radius:6px"></div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px"><div style="height:11px;background:#eef0ec;border-radius:3px;width:88%"></div><div style="height:11px;background:#eef0ec;border-radius:3px;width:70%"></div><div style="height:11px;background:#eef0ec;border-radius:3px;width:80%"></div></div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="6c"><div class="dv-olabel"><a class="dv-oid" href="#6c">6c</a>빈 상태 · 제출 전</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;font-size:13px;color:#7c8079">↑ ① 입력 (표시 중)</div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:14px">
+      <div style="border:1px dashed #d3d6d0;border-radius:12px;padding:40px 24px;text-align:center;background:#fafbf8;display:flex;flex-direction:column;gap:10px;align-items:center">
+        <div style="font-size:15px;font-weight:600">아직 결과가 없습니다</div>
+        <div style="font-size:13px;line-height:1.65;color:#7c8079;max-width:34ch">제출 전에는 이 섹션이 렌더링되지 않습니다. 위에서 공고와 이력서를 넣고 “매칭 결과 보기”를 누르면 여기에 채워집니다.</div>
+      </div>
+      <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;text-align:center">parsedJob · parsedApplicant = null → DOM 없음</div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="6d"><div class="dv-olabel"><a class="dv-oid" href="#6d">6d</a>에러 · 부분 실패</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;font-size:13px;color:#7c8079">↑ ① 입력 (접힘)</div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:16px">
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7c8079">MATCH SCORE</div>
+        <div style="display:flex;align-items:flex-end;gap:12px"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#2f7a3f">72</div><div style="font-size:13px;color:#7c8079;padding-bottom:8px">/ 100 · 계산 완료</div></div>
+        <div style="height:7px;background:#eaece7;border-radius:4px;overflow:hidden"><div style="width:72%;height:100%;background:#2f7a3f"></div></div>
+      </div>
+      <div style="border:1px solid #eedad4;background:#fbeeea;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:9px">
+        <div style="font-size:13px;font-weight:600;color:#b03a2a">지원서류 분석에 실패했습니다</div>
+        <div style="font-size:13px;line-height:1.6">이력서 구조를 읽지 못했습니다. 점수와 공고 분석은 그대로 유효합니다.</div>
+        <div style="display:flex;gap:8px;margin-top:2px"><span style="font-size:13px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:8px 13px">재시도</span><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:8px 13px">이력서 수정</span></div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079">parseApplicantError</div>
+      </div>
+      <div style="border:1px solid #eedad4;background:#fbeeea;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:9px">
+        <div style="font-size:13px;font-weight:600;color:#b03a2a">판단 지점을 확인하지 못했습니다</div>
+        <div style="font-size:13px;line-height:1.6">지원 가능 여부·비자 판단만 비어 있습니다. 나머지는 정상입니다.</div>
+        <div><span style="font-size:13px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:8px 13px;display:inline-block">재시도</span></div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079">judgeError</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:16px;font-size:12px;line-height:1.6;color:#7c8079">규칙: 성공한 섹션은 그대로 두고 실패한 자리에만 에러카드. 전체 화면을 에러로 덮지 않습니다.</div>
+    </div>
+  </div></div>
+</div>
+<p class="dv-next">이어서 볼 것: “<a class="dv-oid" href="#6a">6a</a>의 점수를 스크롤 고정 바로” · “판단 지점을 카드 대신 목록으로” · “부족 스택에 학습 링크 붙이기”</p>
+</section>
+
+<section class="dv-turn" id="t7">
+<div class="dv-thd"><a class="dv-tid" href="#t7">7</a><span class="dv-tname">③ 문서 재구성 제안 <span style="font-family:'Outfit',system-ui,sans-serif;font-weight:400;color:#7c8079">/ 매칭 결과 아래</span></span></div>
+<div class="dv-opts">
+
+  <div class="dv-opt" id="7a"><div class="dv-olabel"><a class="dv-oid" href="#7a">7a</a>정상</div>
+  <div class="dv-card" style="width:1180px">
+    <div style="padding:14px 28px;background:#fafbf8;border-bottom:1px solid #e6e7e3;font-size:13px;color:#7c8079">↑ ② 매칭 결과 (접힘) · 72 / 100</div>
+    <div style="padding:32px 28px;display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end">
+        <div><h2 style="margin:0 0 6px;font-size:26px;font-weight:700;letter-spacing:-.03em">재구성<span style="color:#c4c7c0"> 제안</span></h2><p style="margin:0;font-size:13px;color:#7c8079">부족 스택 3개와 공고 키워드를 반영해 문서를 다시 썼습니다.</p></div>
+        <div style="display:flex;gap:10px"><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:9px 14px">전체 복사</span><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:9px 14px">마크다운 저장</span></div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:24px;display:flex;align-items:center;gap:32px">
+        <div style="display:flex;gap:28px">
+          <div><div style="font-size:12px;color:#7c8079;margin-bottom:4px">원본</div><div style="font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#7c8079">72</div></div>
+          <div><div style="font-size:12px;color:#7c8079;margin-bottom:4px">개선 후</div><div style="font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#2f7a3f">84</div></div>
+          <div><div style="font-size:12px;color:#7c8079;margin-bottom:4px">잠재 최대</div><div style="font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1;color:#0e0f0d">91</div></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+          <div style="height:10px;background:#eaece7;border-radius:5px;overflow:hidden;position:relative"><div style="width:84%;height:100%;background:#2f7a3f"></div></div>
+          <div style="font-size:12px;color:#7c8079">+12점은 문서 수정만으로, 나머지 +7점은 Next.js·테스트 자동화 경험이 실제로 생겨야 오릅니다.</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:20px;align-items:start">
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;overflow:hidden">
+          <div style="display:flex;gap:0;border-bottom:1px solid #eef0ec"><span style="font-size:13px;font-weight:600;padding:13px 18px;border-bottom:2px solid #0e0f0d">이력서</span><span style="font-size:13px;padding:13px 18px;color:#7c8079">자소서</span><span style="font-size:13px;padding:13px 18px;color:#7c8079">포트폴리오</span></div>
+          <div style="padding:22px;display:flex;flex-direction:column;gap:16px">
+            <div style="font-size:14px;line-height:1.8">
+              <div style="font-weight:600;margin-bottom:8px">프론트엔드 엔지니어 · 2년</div>
+              <div style="color:#0e0f0d">React·TypeScript 기반 웹 서비스에서 <span style="background:#f1fadd;border-bottom:1px solid #2f7a3f">컴포넌트 40여 개를 재작성</span>하며 디자인 시스템을 정착시켰습니다. 목록 렌더 구간의 <span style="background:#f1fadd;border-bottom:1px solid #2f7a3f">응답 시간을 1.8초 → 0.6초</span>로 줄였고, 그 과정에서 <span style="background:#f1fadd;border-bottom:1px solid #2f7a3f">Next.js 라우팅 구조를 도입</span>해 초기 로딩 경로를 단순화했습니다.</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;border-top:1px solid #eef0ec;padding-top:14px;font-size:12px;color:#7c8079"><span style="width:10px;height:10px;background:#f1fadd;border:1px solid #2f7a3f;display:inline-block"></span>표시된 부분이 공고 키워드를 반영해 새로 쓴 문장입니다</div>
+            <div style="display:flex;gap:8px"><span style="font-size:13px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:9px 14px">이 문장 복사</span><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:9px 14px">원본과 나란히 보기</span></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;overflow:hidden">
+            <div style="padding:13px 18px;border-bottom:1px solid #eef0ec;font-size:14px;font-weight:600">개선 제안 3</div>
+            <div style="padding:16px 18px;display:flex;flex-direction:column;gap:12px;font-size:13px;line-height:1.6">
+              <div style="display:flex;gap:10px"><span style="font-family:'Outfit',system-ui,sans-serif;color:#2f7a3f">01</span><span>Next.js 경험을 “도입”이 아니라 <b style="font-weight:600">담당 범위와 결과</b>로 서술</span></div>
+              <div style="display:flex;gap:10px;border-top:1px solid #eef0ec;padding-top:12px"><span style="font-family:'Outfit',system-ui,sans-serif;color:#2f7a3f">02</span><span>성과 4건 중 2건에 <b style="font-weight:600">수치</b>가 없음 — 추정치라도 범위로 표기</span></div>
+              <div style="display:flex;gap:10px;border-top:1px solid #eef0ec;padding-top:12px"><span style="font-family:'Outfit',system-ui,sans-serif;color:#2f7a3f">03</span><span>테스트 자동화는 공백 — 개인 프로젝트에 도입해 <b style="font-weight:600">한 줄 확보</b></span></div>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;overflow:hidden">
+            <div style="padding:13px 18px;border-bottom:1px solid #eef0ec;font-size:14px;font-weight:600">면접 꼬리질문 2</div>
+            <div style="padding:16px 18px;display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.6">
+              <div><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-bottom:4px">Q1</div>컴포넌트 40개를 재작성할 때 기존 사용처의 회귀는 어떻게 막았나요?</div>
+              <div style="border-top:1px solid #eef0ec;padding-top:14px"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079;margin-bottom:4px">Q2</div>1.8초 → 0.6초 개선에서 가장 크게 기여한 변경은 무엇이었나요?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="7b"><div class="dv-olabel"><a class="dv-oid" href="#7b">7b</a>로딩 · suggest-resume</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;font-size:13px;color:#7c8079">↑ ② 매칭 결과 (접힘)</div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600">문서를 다시 쓰고 있습니다</div>
+        <div style="height:6px;background:#eaece7;border-radius:3px;overflow:hidden"><div style="width:35%;height:100%;background:#2f7a3f"></div></div>
+        <div style="font-size:13px;color:#7c8079">이력서 · 자소서 2건 처리 중 · 최대 1분</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;gap:20px">
+        <div style="display:flex flex-direction:column"><div style="height:10px;width:34px;background:#eef0ec;border-radius:3px;margin-bottom:8px"></div><div style="height:28px;width:44px;background:#eef0ec;border-radius:4px"></div></div>
+        <div><div style="height:10px;width:44px;background:#eef0ec;border-radius:3px;margin-bottom:8px"></div><div style="height:28px;width:44px;background:#eef0ec;border-radius:4px"></div></div>
+        <div><div style="height:10px;width:52px;background:#eef0ec;border-radius:3px;margin-bottom:8px"></div><div style="height:28px;width:44px;background:#eef0ec;border-radius:4px"></div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:9px"><div style="height:11px;background:#eef0ec;border-radius:3px;width:94%"></div><div style="height:11px;background:#eef0ec;border-radius:3px;width:86%"></div><div style="height:11px;background:#eef0ec;border-radius:3px;width:92%"></div><div style="height:11px;background:#eef0ec;border-radius:3px;width:60%"></div></div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:9px"><div style="height:11px;background:#eef0ec;border-radius:3px;width:78%"></div><div style="height:11px;background:#eef0ec;border-radius:3px;width:56%"></div></div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="7c"><div class="dv-olabel"><a class="dv-oid" href="#7c">7c</a>빈 상태 · 버튼 전</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;font-size:13px;color:#7c8079">↑ ② 매칭 결과 (표시 중)</div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:16px">
+      <div style="border:1px dashed #d3d6d0;border-radius:12px;padding:36px 24px;background:#fafbf8;display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center">
+        <div style="font-size:17px;font-weight:700;letter-spacing:-.02em">부족한 3개를 반영해<span style="color:#c4c7c0"> 문서를 다시 써볼까요?</span></div>
+        <div style="font-size:13px;line-height:1.65;color:#7c8079;max-width:36ch">이력서를 기준으로 재구성문과 개선 제안, 면접 꼬리질문을 만듭니다. 자소서·포트폴리오를 넣었다면 함께 처리합니다.</div>
+        <span style="font-size:14px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:11px 20px">이력서 재구성 제안 보기</span>
+        <span style="font-size:12px;color:#7c8079">약 40초 소요</span>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="7d"><div class="dv-olabel"><a class="dv-oid" href="#7d">7d</a>에러 · suggestionError</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;font-size:13px;color:#7c8079">↑ ② 매칭 결과 (접힘) · 72 / 100 유지</div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:16px">
+      <div style="border:1px solid #eedad4;background:#fbeeea;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:14px;font-weight:600;color:#b03a2a">제안을 만들지 못했습니다</div>
+        <div style="font-size:13px;line-height:1.65">응답이 중간에 끊겼습니다. 문서 3건을 한 번에 처리하다 실패한 경우가 많아, 이력서만으로 다시 시도하면 성공률이 높습니다.</div>
+        <div style="display:flex;gap:8px;margin-top:4px"><span style="font-size:13px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:9px 14px">재시도</span><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:9px 14px">이력서만으로 재시도</span></div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079">suggestionError · empty_response</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:18px;font-size:13px;line-height:1.65;color:#7c8079">매칭 점수와 공고·서류 분석은 위에 그대로 남아 있습니다. 이 에러는 재구성 섹션에만 해당합니다.</div>
+    </div>
+  </div></div>
+</div>
+<p class="dv-next">이어서 볼 것: “<a class="dv-oid" href="#7a">7a</a>를 원본/개선 좌우 비교로” · “문서 탭을 세로 목록으로” · “꼬리질문에 답변 메모칸 추가”</p>
+</section>
+
+<section class="dv-turn" id="t8">
+<div class="dv-thd"><a class="dv-tid" href="#t8">8</a><span class="dv-tname">④ 기업분석 <span style="font-family:'Outfit',system-ui,sans-serif;font-weight:400;color:#7c8079">/company-analysis</span></span></div>
+<div class="dv-opts">
+
+  <div class="dv-opt" id="8a"><div class="dv-olabel"><a class="dv-oid" href="#8a">8a</a>정상 · 리포트</div>
+  <div class="dv-card" style="width:1180px">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 28px;background:#fafbf8;border-bottom:1px solid #e6e7e3"><div style="display:flex;align-items:baseline;gap:10px"><span style="font-size:17px;font-weight:700;letter-spacing:-.02em;color:#4f9e2f">Global Fit</span><span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7c8079">기업분석</span></div><span style="font-size:13px;color:#7c8079">← 매칭으로 돌아가기</span></div>
+    <div style="padding:32px 28px;display:flex;flex-direction:column;gap:24px">
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;gap:12px;align-items:flex-end">
+        <div style="flex:1.2;display:flex;flex-direction:column;gap:7px"><label style="font-size:13px;font-weight:500">회사명</label><div style="border:1px solid #e6e7e3;border-radius:8px;padding:11px 13px;font-size:14px">주식회사 메리디안</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:7px"><label style="font-size:13px;font-weight:500">관심 직무 <span style="font-weight:400;color:#7c8079">선택</span></label><div style="border:1px solid #e6e7e3;border-radius:8px;padding:11px 13px;font-size:14px;color:#7c8079">프론트엔드 엔지니어</div></div>
+        <span style="font-size:14px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:12px 20px">기업분석 보기</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid #e6e7e3;padding-top:22px">
+        <div><h2 style="margin:0 0 5px;font-size:26px;font-weight:700;letter-spacing:-.03em">주식회사 메리디안</h2><div style="font-size:13px;color:#7c8079">프론트엔드 엔지니어 관점 · 출처 7건 · 2026-08-29 기준</div></div>
+        <span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:9px 14px">마크다운 다운로드</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px">
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:18px"><div style="font-size:12px;color:#7c8079;margin-bottom:6px">설립</div><div style="font-size:15px;font-weight:600">2016년</div></div>
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:18px"><div style="font-size:12px;color:#7c8079;margin-bottom:6px">임직원</div><div style="font-size:15px;font-weight:600">약 420명</div></div>
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:18px"><div style="font-size:12px;color:#7c8079;margin-bottom:6px">주력</div><div style="font-size:15px;font-weight:600">B2B 물류 SaaS</div></div>
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:18px"><div style="font-size:12px;color:#7c8079;margin-bottom:6px">최근 투자</div><div style="font-size:15px;font-weight:600">시리즈 C · 2025</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;overflow:hidden">
+          <div style="padding:14px 20px;border-bottom:1px solid #eef0ec;font-size:14px;font-weight:600">사업분석</div>
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px;font-size:13px;line-height:1.7">
+            <div>화주와 운송사를 연결하는 관제 플랫폼이 매출의 대부분. 최근 2년은 <b style="font-weight:600">해외 3PL 연동</b>으로 매출원을 넓히는 중.</div>
+            <div style="border-top:1px solid #eef0ec;padding-top:12px;color:#7c8079">고객 이탈률이 낮은 계약형 구조라 신규 기능보다 <b style="font-weight:600;color:#0e0f0d">운영 안정성</b>을 중시하는 개발 조직.</div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;overflow:hidden">
+          <div style="padding:14px 20px;border-bottom:1px solid #eef0ec;font-size:14px;font-weight:600">환경분석 · SWOT</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr">
+            <div style="padding:16px 18px;border-right:1px solid #eef0ec;border-bottom:1px solid #eef0ec"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#2f7a3f;margin-bottom:6px">STRENGTH</div><div style="font-size:13px;line-height:1.6">국내 관제 점유율 상위 · 계약 갱신율 92%</div></div>
+            <div style="padding:16px 18px;border-bottom:1px solid #eef0ec"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#b03a2a;margin-bottom:6px">WEAKNESS</div><div style="font-size:13px;line-height:1.6">레거시 관제 화면 · 프론트 인력 부족</div></div>
+            <div style="padding:16px 18px;border-right:1px solid #eef0ec"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#2f7a3f;margin-bottom:6px">OPPORTUNITY</div><div style="font-size:13px;line-height:1.6">동남아 3PL 시장 · 관제 자동화 수요</div></div>
+            <div style="padding:16px 18px"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#b03a2a;margin-bottom:6px">THREAT</div><div style="font-size:13px;line-height:1.6">대형 물류사 자체 개발 · 운임 변동</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #eef0ec"><span style="font-size:14px;font-weight:600">채용전략 · 준비 로드맵</span><span style="font-size:12px;color:#7c8079">프론트엔드 엔지니어 기준</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr)">
+          <div style="padding:20px;border-right:1px solid #eef0ec"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.12em;color:#7c8079;margin-bottom:8px">1개월</div><div style="font-size:13px;line-height:1.7">레거시 화면 개선 사례를 이력서 맨 앞으로. 관제 대시보드류 개인 과제 1건.</div></div>
+          <div style="padding:20px;border-right:1px solid #eef0ec"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.12em;color:#7c8079;margin-bottom:8px">3개월</div><div style="font-size:13px;line-height:1.7">Next.js·테스트 자동화 공백 메우기. 대량 데이터 테이블 성능 글 1편.</div></div>
+          <div style="padding:20px"><div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.12em;color:#7c8079;margin-bottom:8px">6개월</div><div style="font-size:13px;line-height:1.7">물류 도메인 용어 정리 후 경력기술서 재작성. 사내 추천 경로 탐색.</div></div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid #eef0ec;font-size:14px;font-weight:600">출처 7</div>
+        <div style="padding:8px 20px 16px;display:flex;flex-direction:column">
+          <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #eef0ec;font-size:13px"><span style="font-family:'Outfit',system-ui,sans-serif;color:#7c8079">01</span><span style="flex:1">회사 공식 채용 페이지 · 조직도</span><span style="color:#7c8079">2026-08</span></div>
+          <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #eef0ec;font-size:13px"><span style="font-family:'Outfit',system-ui,sans-serif;color:#7c8079">02</span><span style="flex:1">투자 유치 보도자료 (시리즈 C)</span><span style="color:#7c8079">2025-11</span></div>
+          <div style="display:flex;gap:12px;padding:10px 0;font-size:13px"><span style="font-family:'Outfit',system-ui,sans-serif;color:#7c8079">03</span><span style="flex:1">기술 블로그 · 관제 화면 리뉴얼 회고</span><span style="color:#7c8079">2026-03</span></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="8b"><div class="dv-olabel"><a class="dv-oid" href="#8b">8b</a>로딩 · analyze-company</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;font-weight:700;letter-spacing:-.02em;color:#4f9e2f">기업분석</span><span style="font-size:13px;color:#7c8079">← 매칭</span></div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:14px;font-weight:600">주식회사 메리디안을 조사하고 있습니다</div>
+        <div style="height:6px;background:#eaece7;border-radius:3px;overflow:hidden"><div style="width:40%;height:100%;background:#2f7a3f"></div></div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+          <div style="display:flex;justify-content:space-between"><span>기업정보 수집</span><span style="font-weight:600;color:#2f7a3f">완료</span></div>
+          <div style="display:flex;justify-content:space-between"><span>사업·환경 분석</span><span style="color:#7c8079">진행 중</span></div>
+          <div style="display:flex;justify-content:space-between;color:#a8ada4"><span>채용전략·로드맵</span><span>대기</span></div>
+        </div>
+        <div style="font-size:12px;color:#7c8079;border-top:1px solid #eef0ec;padding-top:12px">웹 출처를 확인하는 단계라 최대 1분 걸립니다</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:18px"><div style="height:10px;width:40%;background:#eef0ec;border-radius:3px;margin-bottom:10px"></div><div style="height:14px;width:70%;background:#eef0ec;border-radius:3px"></div></div>
+        <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:18px"><div style="height:10px;width:46%;background:#eef0ec;border-radius:3px;margin-bottom:10px"></div><div style="height:14px;width:60%;background:#eef0ec;border-radius:3px"></div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:9px"><div style="height:11px;background:#eef0ec;border-radius:3px;width:92%"></div><div style="height:11px;background:#eef0ec;border-radius:3px;width:80%"></div><div style="height:11px;background:#eef0ec;border-radius:3px;width:66%"></div></div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="8c"><div class="dv-olabel"><a class="dv-oid" href="#8c">8c</a>빈 상태 · 회사명 미입력</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;font-weight:700;letter-spacing:-.02em;color:#4f9e2f">기업분석</span><span style="font-size:13px;color:#7c8079">← 매칭</span></div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;flex-direction:column;gap:6px"><h2 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">관심 있는 회사를<span style="color:#c4c7c0"> 먼저 조사해 보세요</span></h2><p style="margin:0;font-size:13px;line-height:1.65;color:#7c8079">회사명만 있으면 기업정보·사업분석·SWOT·준비 로드맵을 만듭니다. 직무를 넣으면 그 직무 관점으로 좁혀집니다.</p></div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:7px"><label style="font-size:13px;font-weight:500">회사명 <span style="font-weight:400;color:#7c8079">필수</span></label><div style="border:1px solid #e6e7e3;border-radius:8px;padding:11px 13px;font-size:14px;color:#a8ada4">예: 주식회사 메리디안</div></div>
+        <div style="display:flex;flex-direction:column;gap:7px"><label style="font-size:13px;font-weight:500">관심 직무 <span style="font-weight:400;color:#7c8079">선택</span></label><div style="border:1px solid #e6e7e3;border-radius:8px;padding:11px 13px;font-size:14px;color:#a8ada4">예: 프론트엔드 엔지니어</div></div>
+        <span style="font-size:14px;font-weight:500;border:1px solid #e6e7e3;background:#f4f5f2;color:#a8ada4;border-radius:8px;padding:12px;text-align:center">기업분석 보기</span>
+        <span style="font-size:12px;color:#7c8079">회사명을 입력하면 버튼이 열립니다</span>
+      </div>
+      <div style="border:1px dashed #d3d6d0;border-radius:12px;padding:28px 20px;text-align:center;background:#fafbf8;font-size:13px;line-height:1.65;color:#7c8079">리포트는 이 아래에 이어서 표시됩니다</div>
+    </div>
+  </div></div>
+
+  <div class="dv-opt" id="8d"><div class="dv-olabel"><a class="dv-oid" href="#8d">8d</a>에러 · companyError</div>
+  <div class="dv-card" style="width:380px">
+    <div style="padding:14px 22px;background:#fafbf8;border-bottom:1px solid #e6e7e3;display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;font-weight:700;letter-spacing:-.02em;color:#4f9e2f">기업분석</span><span style="font-size:13px;color:#7c8079">← 매칭</span></div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:16px">
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:20px;display:flex;gap:10px;align-items:flex-end">
+        <div style="flex:1;display:flex;flex-direction:column;gap:7px"><label style="font-size:13px;font-weight:500">회사명</label><div style="border:1px solid #e6e7e3;border-radius:8px;padding:11px 13px;font-size:14px">메리디안</div></div>
+        <span style="font-size:13px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:11px 16px">다시</span>
+      </div>
+      <div style="border:1px solid #eedad4;background:#fbeeea;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:14px;font-weight:600;color:#b03a2a">이 회사를 찾지 못했습니다</div>
+        <div style="font-size:13px;line-height:1.65">동명 회사가 여럿이거나 공개 정보가 적습니다. 법인명 전체(주식회사 포함)로 다시 넣어보세요.</div>
+        <div style="display:flex;gap:8px;margin-top:4px"><span style="font-size:13px;font-weight:500;border:1px solid #c7f04a;background:#c7f04a;color:#0e0f0d;border-radius:8px;padding:9px 14px">재시도</span><span style="font-size:13px;font-weight:500;border:1px solid #e6e7e3;background:#fff;border-radius:8px;padding:9px 14px">회사명 수정</span></div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;color:#7c8079">companyError · not_found</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e7e3;border-radius:12px;padding:18px;font-size:13px;line-height:1.65;color:#7c8079">리포트·다운로드 영역은 표시하지 않습니다. 직전 성공 리포트가 있으면 그대로 남겨둡니다.</div>
+    </div>
+  </div></div>
+</div>
+<p class="dv-next">이어서 볼 것: “<a class="dv-oid" href="#8a">8a</a>를 좌측 목차 + 우측 본문 2단으로” · “SWOT을 세로 목록으로” · “매칭 결과의 요구 스택을 기업분석에 넘기기”</p>
+</section>
+</x-dc>
+</body>
+</html>

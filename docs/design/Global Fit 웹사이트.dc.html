@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"><style>body{margin:0;background:#fff;color:#0e0f0d;font-family:'Gothic A1','Outfit',system-ui,sans-serif;-webkit-font-smoothing:antialiased;word-break:keep-all;text-wrap:pretty}a{color:#0e0f0d;text-decoration:none}a:hover{color:#2f7a3f}h1,h2,h3{margin:0;word-break:keep-all}p{margin:0;word-break:keep-all}
+@media (max-width:900px){
+[data-r="shell"]{padding:14px 14px 0 !important}
+[data-r="cols"]{grid-template-columns:1fr !important;gap:28px !important}
+section[data-r="cols"]{padding-top:56px !important;padding-bottom:56px !important}
+[data-r="stats"]{grid-template-columns:1fr 1fr !important}
+[data-r="stats"]>*{margin-top:0 !important}
+[data-r="nav"]{display:none !important}
+[data-r="navbar"]{padding:16px 18px !important}
+[data-r="hero-pad"]{padding:28px 18px 0 !important}
+[data-r="hero-bottom"]{flex-direction:column !important;align-items:flex-start !important;padding:28px 18px 32px !important;gap:24px !important}
+[data-r="hero-h1"]{font-size:40px !important}
+[data-r="hero-media"]{height:210px !important}
+[data-r="h2"]{font-size:30px !important}
+[data-r="media"]{height:260px !important;min-height:0 !important}
+[data-r="pad"]{padding:32px 20px !important}
+[data-r="footer-links"]{grid-template-columns:1fr 1fr !important}
+[data-r="chips"]{justify-content:flex-start !important}
+}
+@media (max-width:560px){
+[data-r="stats"]{grid-template-columns:1fr !important}
+[data-r="faq"]{grid-template-columns:1fr !important}
+[data-r="hero-h1"]{font-size:32px !important}
+[data-r="h2"]{font-size:25px !important}
+[data-r="footer-links"]{grid-template-columns:1fr !important}
+[data-r="cta"]{width:100% !important;text-align:center !important}
+[data-r="ctas"]{flex-direction:column !important}
+}</style></helmet>
+
+<div data-r="shell" style="max-width:1280px;margin:0 auto;padding:24px 24px 0">
+
+  <section style="position:relative;background:#0e0f0d;border-radius:18px;overflow:hidden;color:#fff">
+    <div data-r="navbar" style="display:flex;justify-content:space-between;align-items:center;padding:22px 32px;flex-wrap:wrap;gap:12px">
+      <span style="font-size:20px;font-weight:700;letter-spacing:-.02em">Global Fit</span>
+      <div data-r="nav" style="display:flex;gap:26px;align-items:center;font-size:14px;color:#c9cdc6">
+        <a href="#how" style="color:#c9cdc6">사용법</a>
+        <a href="#features" style="color:#c9cdc6">기능</a>
+        <a href="#company" style="color:#c9cdc6">기업분석</a>
+        <a href="#faq" style="color:#c9cdc6">FAQ</a>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;font-size:14px">
+        <span style="color:#c9cdc6">로그인</span>
+        <span style="border:1px solid #4a4f47;border-radius:8px;padding:8px 16px;font-weight:500">무료로 시작</span>
+      </div>
+    </div>
+
+    <div data-r="cols hero-pad" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;padding:44px 32px 0;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:26px;max-width:44ch">
+        <p style="font-size:15px;line-height:1.75;color:#c9cdc6">공고 하나와 내 이력서만 있으면 됩니다. 기업분석까지 함께 돌려 매칭 점수, 부족한 부분, 다시 쓴 문장을 한 번에 받아보세요.</p>
+        <div data-r="ctas" style="display:flex;gap:12px">
+          <span data-r="cta" style="background:#c7f04a;color:#0e0f0d;font-size:14px;font-weight:600;border-radius:9px;padding:13px 22px">무료로 진단하기 →</span>
+          <span data-r="cta" style="border:1px solid #4a4f47;color:#fff;font-size:14px;font-weight:500;border-radius:9px;padding:13px 22px">기능 살펴보기</span>
+        </div>
+      </div>
+      <div data-r="hero-media" style="height:330px;border-radius:14px;background:repeating-linear-gradient(135deg,#1b2118 0 12px,#141a12 12px 24px);border:1px solid #2b312a;display:flex;align-items:flex-end;justify-content:center;padding:18px">
+        <span style="font-family:'Outfit',system-ui,sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#8e948a">product shot — 매칭 리포트 화면</span>
+      </div>
+    </div>
+
+    <div data-r="hero-bottom" style="display:flex;justify-content:space-between;align-items:flex-end;padding:36px 32px 40px;gap:32px">
+      <h1 data-r="hero-h1" style="font-size:60px;font-weight:700;letter-spacing:-.035em;line-height:1.06;max-width:16ch">공고에 맞는 이력서는<br>따로 있습니다.</h1>
+      <div style="display:flex;flex-direction:column;gap:12px;flex:none">
+        <span style="font-family:'Outfit',system-ui,sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8e948a">읽을 수 있는 입력</span>
+        <div data-r="chips" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+          <span style="border:1px solid #2b312a;border-radius:7px;padding:7px 13px;font-size:13px;color:#c9cdc6">공고 URL</span>
+          <span style="border:1px solid #2b312a;border-radius:7px;padding:7px 13px;font-size:13px;color:#c9cdc6">PDF</span>
+          <span style="border:1px solid #2b312a;border-radius:7px;padding:7px 13px;font-size:13px;color:#c9cdc6">DOCX</span>
+          <span style="border:1px solid #2b312a;border-radius:7px;padding:7px 13px;font-size:13px;color:#c9cdc6">붙여넣기</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-r="cols" style="display:grid;grid-template-columns:1.15fr 1fr;gap:56px;padding:96px 8px 88px;align-items:start">
+    <h2 data-r="h2" style="font-size:42px;font-weight:700;letter-spacing:-.03em;line-height:1.2;text-wrap:pretty">지원할 때마다 다시 쓰는 게 맞습니다.<span style="color:#c4c7c0"> 무엇을 고쳐야 하는지만 알려주면 되죠.</span></h2>
+    <div data-r="stats" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div style="border:1px solid #e6e7e3;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:6px">
+        <div style="width:30px;height:30px;border-radius:8px;background:#f1fadd;border:1px solid #d9eeae;margin-bottom:8px"></div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:32px;font-weight:700;letter-spacing:-.02em">42초</div>
+        <div style="font-size:13px;color:#7c8079">공고 하나 분석 평균</div>
+      </div>
+      <div style="border:1px solid #e6e7e3;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:6px;margin-top:28px">
+        <div style="width:30px;height:30px;border-radius:8px;background:#f1fadd;border:1px solid #d9eeae;margin-bottom:8px"></div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:32px;font-weight:700;letter-spacing:-.02em">7종</div>
+        <div style="font-size:13px;color:#7c8079">공고·문서 처리 엔진</div>
+      </div>
+      <div style="border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(150deg,#2f7a3f,#1c5228);color:#fff">
+        <div style="width:30px;height:30px;border-radius:8px;background:rgba(199,240,74,.22);border:1px solid rgba(199,240,74,.45);margin-bottom:8px"></div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:32px;font-weight:700;letter-spacing:-.02em">+12점</div>
+        <div style="font-size:13px;color:#cfe6cf">재구성 후 평균 매칭 상승</div>
+      </div>
+      <div style="border:1px solid #e6e7e3;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:6px;margin-top:28px">
+        <div style="width:30px;height:30px;border-radius:8px;background:#f1fadd;border:1px solid #d9eeae;margin-bottom:8px"></div>
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:32px;font-weight:700;letter-spacing:-.02em">3문서</div>
+        <div style="font-size:13px;color:#7c8079">이력서·자소서·포트폴리오</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" data-r="cols" style="display:grid;grid-template-columns:1fr 1.1fr;gap:56px;padding:0 8px 96px;align-items:start">
+    <div data-r="media" style="height:520px;border-radius:16px;background:repeating-linear-gradient(135deg,#eef0ec 0 12px,#e6e9e3 12px 24px);border:1px solid #e6e7e3;display:flex;align-items:flex-start;justify-content:space-between;padding:18px">
+      <span style="background:#fff;border:1px solid #e6e7e3;border-radius:7px;padding:6px 11px;font-size:12px">매칭 점수</span>
+      <span style="font-family:'Outfit',system-ui,sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#a8ada4;align-self:flex-end">product shot — 재구성 제안</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <h2 data-r="h2" style="font-size:40px;font-weight:700;letter-spacing:-.03em;line-height:1.18;margin-bottom:26px">문서 하나로 끝내는<span style="color:#c4c7c0"> 지원 준비 전 과정.</span></h2>
+      <div style="display:flex;gap:18px;padding:22px 0;border-top:1px solid #e6e7e3">
+        <div style="width:34px;height:34px;flex:none;border-radius:9px;background:#f1fadd;border:1px solid #d9eeae"></div>
+        <div><h3 style="font-size:17px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px">요구 스택 대조</h3><p style="font-size:14px;line-height:1.7;color:#7c8079">공고에서 뽑은 스택과 내 문서의 스택을 붙여놓고 보유·부족을 갈라줍니다. 점수는 하드 룰이라 매번 같습니다.</p></div>
+      </div>
+      <div style="display:flex;gap:18px;padding:22px 0;border-top:1px solid #e6e7e3">
+        <div style="width:34px;height:34px;flex:none;border-radius:9px;background:#f1fadd;border:1px solid #d9eeae"></div>
+        <div><h3 style="font-size:17px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px">문서 재구성문</h3><p style="font-size:14px;line-height:1.7;color:#7c8079">이력서·자소서·포트폴리오를 공고 키워드에 맞춰 다시 씁니다. 바꾼 문장이 어디인지 표시됩니다.</p></div>
+      </div>
+      <div style="display:flex;gap:18px;padding:22px 0;border-top:1px solid #e6e7e3">
+        <div style="width:34px;height:34px;flex:none;border-radius:9px;background:#f1fadd;border:1px solid #d9eeae"></div>
+        <div><h3 style="font-size:17px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px">면접 꼬리질문</h3><p style="font-size:14px;line-height:1.7;color:#7c8079">내 이력서에서 실제로 나올 기술 질문 2개를 미리 뽑아 줍니다.</p></div>
+      </div>
+      <div style="display:flex;gap:18px;padding:22px 0;border-top:1px solid #e6e7e3;border-bottom:1px solid #e6e7e3">
+        <div style="width:34px;height:34px;flex:none;border-radius:9px;background:#f1fadd;border:1px solid #d9eeae"></div>
+        <div><h3 style="font-size:17px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px">기업분석 리포트</h3><p style="font-size:14px;line-height:1.7;color:#7c8079">회사명만 넣으면 사업분석·SWOT·채용전략과 1·3·6개월 준비 로드맵까지. 출처를 함께 보여줍니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" data-r="cols" style="display:grid;grid-template-columns:1fr 1.05fr;gap:64px;padding:0 8px 96px;align-items:start">
+    <div>
+      <h2 data-r="h2" style="font-size:40px;font-weight:700;letter-spacing:-.03em;line-height:1.18">지원 준비, 세 단계로<span style="color:#c4c7c0"> 끝냅니다.</span></h2>
+      <p style="font-size:14px;line-height:1.75;color:#7c8079;margin-top:18px;max-width:38ch">회원가입 없이 붙여넣기만으로 시작할 수 있습니다. 결과는 한 화면에서 위에서 아래로 이어집니다.</p>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:20px;padding-bottom:28px;border-left:1px solid #e6e7e3;padding-left:0">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:15px;font-weight:600;color:#2f7a3f;padding-left:20px;border-left:2px solid #c7f04a;margin-left:-1px">01</div>
+        <div><h3 style="font-size:16px;font-weight:700;margin-bottom:7px">공고와 이력서 넣기</h3><p style="font-size:14px;line-height:1.7;color:#7c8079">공고는 URL 또는 본문, 이력서는 PDF·DOCX·HTML 파일이나 텍스트. 자소서·포트폴리오는 선택입니다.</p></div>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:20px;padding-bottom:28px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:15px;font-weight:600;color:#a8ada4;padding-left:20px;border-left:1px solid #e6e7e3">02</div>
+        <div><h3 style="font-size:16px;font-weight:700;margin-bottom:7px">매칭 결과 확인</h3><p style="font-size:14px;line-height:1.7;color:#7c8079">점수와 제출 방법, 필요 서류, 부족한 스택. 지원 가능 여부와 비자 조건 같은 판단 지점도 함께.</p></div>
+      </div>
+      <div style="display:grid;grid-template-columns:52px 1fr;gap:20px">
+        <div style="font-family:'Outfit',system-ui,sans-serif;font-size:15px;font-weight:600;color:#a8ada4;padding-left:20px;border-left:1px solid #e6e7e3">03</div>
+        <div><h3 style="font-size:16px;font-weight:700;margin-bottom:7px">문서 다시 쓰기</h3><p style="font-size:14px;line-height:1.7;color:#7c8079">원본·개선 후·잠재 최대 점수와 함께 재구성문을 받습니다. 그대로 복사해 제출하면 끝.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="company" data-r="cols" style="background:#0e0f0d;border-radius:18px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;color:#fff;margin-bottom:96px">
+    <div data-r="pad" style="padding:52px 40px;display:flex;flex-direction:column;gap:20px;align-self:center">
+      <h2 data-r="h2" style="font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1.15">아직 지원 안 했어도<br>회사는 먼저 볼 수 있습니다.</h2>
+      <p style="font-size:14px;line-height:1.75;color:#c9cdc6;max-width:42ch">회사명과 관심 직무만 넣으면 기업정보·사업분석·SWOT·채용전략과 준비 로드맵을 정리해 줍니다. 마크다운으로 저장해 두고 면접 전에 다시 읽으세요.</p>
+      <span data-r="cta" style="background:#c7f04a;color:#0e0f0d;font-size:14px;font-weight:600;border-radius:9px;padding:13px 22px;width:fit-content">기업분석 해보기 →</span>
+    </div>
+    <div data-r="media" style="min-height:340px;background:repeating-linear-gradient(135deg,#1b2118 0 12px,#141a12 12px 24px);border-left:1px solid #2b312a;display:flex;align-items:flex-end;padding:18px"><span style="font-family:'Outfit',system-ui,sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#8e948a">product shot — 기업분석 리포트</span></div>
+  </section>
+
+  <section id="faq" style="padding:0 8px 96px">
+    <h2 data-r="h2" style="font-size:40px;font-weight:700;letter-spacing:-.03em;line-height:1.18;margin-bottom:28px">자주 묻는<span style="color:#c4c7c0"> 질문</span></h2>
+    <div data-r="faq" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:20px 22px"><div style="font-size:13px;color:#7c8079;margin-bottom:8px">Q. 회원가입을 해야 하나요?</div><div style="font-size:15px;font-weight:500;line-height:1.6">아니요. 공고와 이력서를 붙여넣으면 바로 결과가 나옵니다.</div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:20px 22px"><div style="font-size:13px;color:#7c8079;margin-bottom:8px">Q. HWP 파일도 되나요?</div><div style="font-size:15px;font-weight:500;line-height:1.6">지금은 PDF·DOCX·HTML만 지원합니다. PDF로 저장해 올려주세요.</div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:20px 22px"><div style="font-size:13px;color:#7c8079;margin-bottom:8px">Q. 매칭 점수는 어떻게 계산되나요?</div><div style="font-size:15px;font-weight:500;line-height:1.6">요구 스택 대비 보유 스택을 고정 규칙으로 계산합니다. 같은 입력이면 항상 같은 점수입니다.</div></div>
+      <div style="border:1px solid #e6e7e3;border-radius:12px;padding:20px 22px"><div style="font-size:13px;color:#7c8079;margin-bottom:8px">Q. 해외 공고도 되나요?</div><div style="font-size:15px;font-weight:500;line-height:1.6">됩니다. 제출 방법과 비자·체류 조건을 판단 지점으로 따로 표시합니다.</div></div>
+    </div>
+  </section>
+
+  <footer data-r="pad" style="background:#0e0f0d;border-radius:18px;color:#fff;padding:52px 40px;margin-bottom:24px;display:flex;flex-direction:column;gap:40px">
+    <div data-r="cols" style="display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <span style="font-size:30px;font-weight:700;letter-spacing:-.03em">Global Fit</span>
+        <p style="font-size:14px;line-height:1.75;color:#c9cdc6;max-width:38ch">공고와 내 문서 사이의 거리를 숫자로 보여주고, 그 거리를 줄이는 문장을 대신 써 드립니다.</p>
+        <span data-r="cta" style="background:#c7f04a;color:#0e0f0d;font-size:14px;font-weight:600;border-radius:9px;padding:13px 22px;width:fit-content">무료로 진단하기 →</span>
+      </div>
+      <div data-r="footer-links" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;font-size:14px;color:#c9cdc6">
+        <div style="display:flex;flex-direction:column;gap:11px"><span style="color:#8e948a;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-family:'Outfit',system-ui,sans-serif">제품</span><span>매칭 진단</span><span>문서 재구성</span><span>기업분석</span></div>
+        <div style="display:flex;flex-direction:column;gap:11px"><span style="color:#8e948a;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-family:'Outfit',system-ui,sans-serif">자료</span><span>사용법</span><span>자주 묻는 질문</span><span>업데이트</span></div>
+        <div style="display:flex;flex-direction:column;gap:11px"><span style="color:#8e948a;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-family:'Outfit',system-ui,sans-serif">회사</span><span>소개</span><span>이용약관</span><span>개인정보 처리방침</span></div>
+      </div>
+    </div>
+    <div style="border-top:1px solid #2b312a;padding-top:22px;font-size:12px;color:#8e948a">© 2026 Global Fit. 입력한 문서는 분석에만 쓰이며 저장하지 않습니다.</div>
+  </footer>
+</div>
+
+</x-dc>
+</body>
+</html>
