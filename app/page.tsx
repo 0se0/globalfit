@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type SubmitEvent } from "react";
 import { calculateMatch } from "@/lib/calculate-match";
 import type { CanonicalizedStack } from "@/lib/canonicalize-stacks";
+import { mergeCompanyStacksIntoPreferred } from "@/lib/merge-company-stacks";
 import { ErrorCard } from "@/components/ErrorCard";
 import type { CompanyReport } from "@/app/api/analyze-company/route";
 
@@ -108,26 +109,6 @@ function scoreColorClass(score: number): string {
   if (score >= 70) return "text-emerald-600";
   if (score >= 40) return "text-amber-600";
   return "text-red-600";
-}
-
-// 기업분석의 "최근 채용공고 요구 스택"을 JD의 preferred_stacks에 합친다 (2026-08-29
-// 결정, CLAUDE.md 참고) — canonical 기준으로 중복 제거. required_stacks는 손대지
-// 않고, 기업분석을 안 했으면 JD의 preferred_stacks만 그대로 반환한다
-function mergeCompanyStacksIntoPreferred(
-  jdPreferred: CanonicalizedStack[],
-  companyAggregatedStacks: CanonicalizedStack[] | undefined
-): CanonicalizedStack[] {
-  if (!companyAggregatedStacks || companyAggregatedStacks.length === 0) return jdPreferred;
-  const seen = new Set(jdPreferred.map((s) => (s.canonical ?? s.raw).toLowerCase()));
-  const merged = [...jdPreferred];
-  for (const stack of companyAggregatedStacks) {
-    const key = (stack.canonical ?? stack.raw).toLowerCase();
-    if (!seen.has(key)) {
-      seen.add(key);
-      merged.push(stack);
-    }
-  }
-  return merged;
 }
 
 // analyze-company 라우트는 검색으로 못 찾은 필드를 빈 문자열로 반환한다(암묵지
