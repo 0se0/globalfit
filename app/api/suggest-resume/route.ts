@@ -48,6 +48,7 @@ const RULES = `Follow these rules exactly:
   (1) "Why" reasoning: for experiences where the original text already explains WHY the applicant made a choice (not just what they did) and/or what changed as a result, surface and foreground that reasoning more clearly — a reader should come away understanding the applicant's decision-making, not just a list of activities.
   (2) Character signal: for experiences where the original text already reveals how the applicant works with others, leads, learns, or handles setbacks (team feedback, self-reflection, a described role in a group), foreground those passages so the letter reads as "what kind of person this applicant is," not a flat achievement list.
   Only reorder/reword what's already there for these two lenses — if a given experience in the original text has no stated "why" or character signal at all, leave that experience's wording as-is (do not fabricate a reason or trait for it); instead flag the gap via narrative_gaps below. If NO cover letter document is provided, return an empty string "" for this field.
+  (3) Company fit connection: ONLY if "Company fit points" are given below (non-empty) AND the letter already contains a passage expressing interest in or fit with the company, you may add ONE short connecting clause to that existing passage that names a specific company fit point and explains why the applicant's ALREADY-STATED experience is relevant to it. The company fact itself must be copied/closely paraphrased from the given company fit points — never invent a company fact beyond what's given. This clause must NOT introduce any new fact, number, experience, project, or skill about the APPLICANT that isn't already elsewhere in the letter — it only draws a connection between what the applicant already said and the given company fact. If company fit points are empty/not given, or the letter has no such passage to attach a connection to, skip this lens entirely.
 - portfolio_suggestion: if a portfolio document is provided below, rewrite it with the SAME restrictions as resume_suggestion, focused on reordering/prioritizing existing projects to best match the job posting's stacks (never inventing a new project or stack). If NO portfolio document is provided, return an empty string "" for this field.
 - confirmed_gap_stacks: you are given a list of "candidate stacks" the job posting needs. For each candidate, include it in this array ONLY IF that exact stack is already literally mentioned somewhere in the original resume document (even briefly, e.g. in a project description). If a candidate is not mentioned anywhere in the original resume document, do NOT include it. Never guess or assume presence. If none are confirmed, return an empty array.
 - interview_questions: generate EXACTLY 2 realistic technical interview follow-up questions, as an interviewer would ask after reading this resume alongside the job posting's required/preferred stacks. Each question MUST reference a specific project, experience, or technology that is literally mentioned in the original resume document — do not invent scenarios or reference anything not in the document. Output in the same language as the original document.
@@ -60,6 +61,9 @@ Job posting's required/preferred stacks (for interview question relevance):
 
 Candidate stacks to check:
 {{CANDIDATE_STACKS}}
+
+Company fit points (verified facts about the company, from company research — may be empty):
+{{COMPANY_FIT_POINTS}}
 
 Resume document:
 """
@@ -84,6 +88,9 @@ Job posting's required/preferred stacks (for interview question relevance):
 Candidate stacks to check:
 {{CANDIDATE_STACKS}}
 
+Company fit points (verified facts about the company, from company research — may be empty):
+{{COMPANY_FIT_POINTS}}
+
 Cover letter document (optional, may be empty):
 """
 {{COVER_LETTER_TEXT}}
@@ -105,15 +112,23 @@ interface GeminiSuggestionOutput {
 }
 
 export async function POST(request: Request) {
-  const { resumeText, resumeFile, coverLetterText, portfolioText, gapStacks, jobStacks } =
-    (await request.json()) as {
-      resumeText?: string;
-      resumeFile?: { dataBase64: string; mimeType: string };
-      coverLetterText?: string;
-      portfolioText?: string;
-      gapStacks?: string[];
-      jobStacks?: string[];
-    };
+  const {
+    resumeText,
+    resumeFile,
+    coverLetterText,
+    portfolioText,
+    gapStacks,
+    jobStacks,
+    companyFitPoints,
+  } = (await request.json()) as {
+    resumeText?: string;
+    resumeFile?: { dataBase64: string; mimeType: string };
+    coverLetterText?: string;
+    portfolioText?: string;
+    gapStacks?: string[];
+    jobStacks?: string[];
+    companyFitPoints?: string[];
+  };
 
   if (resumeFile && resumeFile.dataBase64.length > (MAX_FILE_SIZE * 4) / 3) {
     return NextResponse.json({ error: "file_too_large" }, { status: 400 });
@@ -126,6 +141,8 @@ export async function POST(request: Request) {
   const jobStacksText = (jobStacks ?? []).join(", ") || "(none)";
   const coverLetterTextValue = coverLetterText?.trim() || "(none provided)";
   const portfolioTextValue = portfolioText?.trim() || "(none provided)";
+  const companyFitPointsText =
+    (companyFitPoints ?? []).map((point) => `- ${point}`).join("\n") || "(none)";
 
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -137,6 +154,7 @@ export async function POST(request: Request) {
               {
                 text: FILE_PROMPT.replace("{{CANDIDATE_STACKS}}", candidateStacksText)
                   .replace("{{JOB_STACKS}}", jobStacksText)
+                  .replace("{{COMPANY_FIT_POINTS}}", companyFitPointsText)
                   .replace("{{COVER_LETTER_TEXT}}", coverLetterTextValue)
                   .replace("{{PORTFOLIO_TEXT}}", portfolioTextValue),
               },
@@ -151,6 +169,7 @@ export async function POST(request: Request) {
         ]
       : TEXT_PROMPT.replace("{{CANDIDATE_STACKS}}", candidateStacksText)
           .replace("{{JOB_STACKS}}", jobStacksText)
+          .replace("{{COMPANY_FIT_POINTS}}", companyFitPointsText)
           .replace("{{RESUME_TEXT}}", resumeText as string)
           .replace("{{COVER_LETTER_TEXT}}", coverLetterTextValue)
           .replace("{{PORTFOLIO_TEXT}}", portfolioTextValue);

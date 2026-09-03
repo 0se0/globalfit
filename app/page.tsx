@@ -682,6 +682,10 @@ export default function Home() {
           portfolioText: resolvedPortfolioText || undefined,
           gapStacks,
           jobStacks,
+          // 기업분석에서 나온 "비즈니스 적응 근거"(회사 쪽 사실만, 지원자 사실
+          // 아님)를 넘겨서 자소서의 "왜 이 회사인지" 문단이 실제 회사 정보를
+          // 인용하게 함 — 기업분석을 안 했으면 undefined라 기존 동작과 동일
+          companyFitPoints: companyReport?.role_understanding.business_fit_points,
         }),
       });
       if (!res.ok) throw new Error("suggest_failed");
