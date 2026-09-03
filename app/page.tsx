@@ -64,8 +64,15 @@ interface ApplicantInput {
   resumeFile?: { dataBase64: string; mimeType: string };
 }
 
+interface ResumeEdit {
+  original: string;
+  replacement: string;
+  reason: string;
+}
+
 interface SuggestionResult {
   resume_suggestion: string;
+  resume_edits: ResumeEdit[];
   cover_letter_suggestion: string;
   portfolio_suggestion: string;
   confirmed_gap_stacks: string[];
@@ -1937,6 +1944,34 @@ export default function Home() {
                 <p className="font-outfit text-3xl font-bold text-ink">{potentialMatch.score}</p>
               </div>
             </div>
+
+            {suggestionResult.resume_edits.length > 0 && (
+              <div className="rounded-[12px] border border-line">
+                <div className="border-b border-line-soft px-4 py-3 text-base font-semibold">
+                  회사맞춤 이력서 첨삭
+                  <span className="ml-2 text-[13px] font-normal text-muted">
+                    빨간 부분을 초록 문구로 — 실제 수정은 본인이 직접 반영하세요
+                  </span>
+                </div>
+                <div className="flex flex-col gap-3 p-4">
+                  {suggestionResult.resume_edits.map((edit, i) => (
+                    <div key={i} className="rounded-[10px] border border-line-soft p-3.5">
+                      <p className="text-sm leading-relaxed">
+                        <span className="rounded-[4px] bg-alertwash px-1 text-alert line-through decoration-2">
+                          {edit.original}
+                        </span>
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed">
+                        <span className="rounded-[4px] bg-limewash px-1 text-deepgreen">
+                          {edit.replacement}
+                        </span>
+                      </p>
+                      <p className="mt-2 text-xs text-muted">{edit.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="rounded-[12px] border border-line">
               <div className="border-b border-line-soft px-4 py-3 text-base font-semibold">

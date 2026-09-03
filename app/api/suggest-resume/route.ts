@@ -12,6 +12,18 @@ const RESPONSE_SCHEMA = {
   type: Type.OBJECT,
   properties: {
     resume_suggestion: { type: Type.STRING },
+    resume_edits: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          original: { type: Type.STRING },
+          replacement: { type: Type.STRING },
+          reason: { type: Type.STRING },
+        },
+        required: ["original", "replacement", "reason"],
+      },
+    },
     cover_letter_suggestion: { type: Type.STRING },
     portfolio_suggestion: { type: Type.STRING },
     confirmed_gap_stacks: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -20,6 +32,7 @@ const RESPONSE_SCHEMA = {
   },
   required: [
     "resume_suggestion",
+    "resume_edits",
     "cover_letter_suggestion",
     "portfolio_suggestion",
     "confirmed_gap_stacks",
@@ -30,6 +43,7 @@ const RESPONSE_SCHEMA = {
 
 const RULES = `Follow these rules exactly:
 - resume_suggestion: rewrite the resume text with ONLY reordering of sentences/paragraphs, rewording with synonyms, shifting emphasis, or rephrasing existing facts/numbers (e.g. "팀 프로젝트 참여" -> "5인 팀에서 백엔드 담당"). NEVER add a new fact, number, experience, project name, or technology/stack name that is not already present in the original document. Output in the same language as the original document.
+- resume_edits: separately from resume_suggestion, produce 3-6 targeted before/after edit pairs a human can apply directly to specific spots in the ORIGINAL resume text (this is a redline/proofreading view, not the full rewrite). For each item: "original" MUST be an exact, verbatim substring copied character-for-character from the original resume document (so it can be located and highlighted) — never paraphrase or summarize it. "replacement" follows the exact same restriction as resume_suggestion: only reordering, rewording with synonyms, shifting emphasis, or rephrasing the SAME facts/numbers already in "original" — NEVER introduce a new fact, number, experience, project name, or technology/stack not already present in "original". "reason": a short phrase (e.g. "공고 필수 스택 강조", "임팩트 있는 수치 표현으로") explaining why this edit helps for THIS specific job posting. If the resume offers fewer good edit points, return fewer items rather than padding; if literally nothing is worth changing, return an empty array.
 - cover_letter_suggestion: if a cover letter document is provided below, rewrite it with the SAME restrictions as resume_suggestion (only reordering paragraphs, rewording, shifting emphasis — never adding new facts). On top of that, apply these two lenses when deciding what to foreground (still reordering/rewording only, never inventing content):
   (1) "Why" reasoning: for experiences where the original text already explains WHY the applicant made a choice (not just what they did) and/or what changed as a result, surface and foreground that reasoning more clearly — a reader should come away understanding the applicant's decision-making, not just a list of activities.
   (2) Character signal: for experiences where the original text already reveals how the applicant works with others, leads, learns, or handles setbacks (team feedback, self-reflection, a described role in a group), foreground those passages so the letter reads as "what kind of person this applicant is," not a flat achievement list.
@@ -82,6 +96,7 @@ Portfolio document (optional, may be empty):
 
 interface GeminiSuggestionOutput {
   resume_suggestion: string;
+  resume_edits: { original: string; replacement: string; reason: string }[];
   cover_letter_suggestion: string;
   portfolio_suggestion: string;
   confirmed_gap_stacks: string[];
