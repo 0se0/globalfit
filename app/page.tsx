@@ -83,6 +83,12 @@ interface GapGuideResult {
   guides: GapGuideItem[];
 }
 
+interface JdComparison {
+  label: string;
+  score: number;
+  gap_stacks: string[];
+}
+
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -179,6 +185,8 @@ function PlainBulletList({ items }: { items: string[] }) {
 }
 
 const MAX_COMPANY_URLS = 3;
+const MAX_EXTRA_JDS = 5;
+const JD_BLOCK_DELIMITER = /\n-{3,}\n/;
 
 function parseCompanyUrls(rawText: string): string[] {
   return Array.from(
@@ -375,6 +383,10 @@ export default function Home() {
   const [isLoadingGapGuide, setIsLoadingGapGuide] = useState(false);
   const [gapGuideResult, setGapGuideResult] = useState<GapGuideResult | null>(null);
   const [gapGuideError, setGapGuideError] = useState<string | null>(null);
+  const [extraJdText, setExtraJdText] = useState("");
+  const [isComparingJds, setIsComparingJds] = useState(false);
+  const [compareJdsError, setCompareJdsError] = useState<string | null>(null);
+  const [jdComparisons, setJdComparisons] = useState<JdComparison[] | null>(null);
   const [companyName, setCompanyName] = useState("");
   const [roleOfInterest, setRoleOfInterest] = useState("");
   const [companyUrlsText, setCompanyUrlsText] = useState("");
@@ -602,6 +614,8 @@ export default function Home() {
     setSuggestionError(null);
     setGapGuideResult(null);
     setGapGuideError(null);
+    setJdComparisons(null);
+    setCompareJdsError(null);
     try {
       let body: ApplicantInput;
       if (file && isPdfFile(file)) {
@@ -681,6 +695,52 @@ export default function Home() {
       setGapGuideError("학습 가이드 생성에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsLoadingGapGuide(false);
+    }
+  }
+
+  // "여러 공고 비교"는 새 엔드포인트를 만들지 않는다 — 기존 parse-job +
+  // calculateMatch(순수 함수)를 공고 개수만큼 반복 호출하고 결과를 클라이언트
+  // 배열로만 쥔다. 서버 조합 API도, 저장도 없음(세션 한정 — CLAUDE.md
+  // "히스토리 저장 금지" 취지 유지). 기업분석의 aggregated_stacks는 STEP 00에서
+  // 분석한 그 회사에만 의미가 있으므로 여기서는 합치지 않는다 — 다른 회사
+  // 공고일 수 있기 때문
+  async function runCompareJds() {
+    if (!parsedApplicant) return;
+    const blocks = extraJdText
+      .split(JD_BLOCK_DELIMITER)
+      .map((block) => block.trim())
+      .filter(Boolean)
+      .slice(0, MAX_EXTRA_JDS);
+    if (blocks.length === 0) return;
+
+    setIsComparingJds(true);
+    setCompareJdsError(null);
+    setJdComparisons(null);
+    try {
+      const results = await Promise.all(
+        blocks.map(async (block, i) => {
+          const res = await fetch("/api/parse-job", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ jdText: block }),
+          });
+          if (!res.ok) throw new Error("parse_failed");
+          const parsed: ParsedJob = await res.json();
+          const match = calculateMatch(
+            parsed.required_stacks,
+            parsed.preferred_stacks,
+            parsedApplicant.stacks
+          );
+          const firstLine = block.split("\n").find((line) => line.trim())?.trim();
+          const label = firstLine ? firstLine.slice(0, 40) : `공고 ${i + 1}`;
+          return { label, score: match.score, gap_stacks: match.gap_stacks };
+        })
+      );
+      setJdComparisons(results);
+    } catch {
+      setCompareJdsError("공고 비교에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsComparingJds(false);
     }
   }
 
@@ -827,6 +887,10 @@ export default function Home() {
     setSuggestionError(null);
     setGapGuideResult(null);
     setGapGuideError(null);
+    setExtraJdText("");
+    setIsComparingJds(false);
+    setCompareJdsError(null);
+    setJdComparisons(null);
     setCompanyName("");
     setRoleOfInterest("");
     setCompanyUrlsText("");
@@ -1967,6 +2031,64 @@ export default function Home() {
                 ))}
               </ol>
             </div>
+          </div>
+        )}
+
+        {parsedApplicant && (
+          <div className="rounded-xl border border-line bg-white p-6">
+            <h2 className="text-xl font-bold tracking-tight">
+              다른 공고와<span className="text-ghost"> 비교</span>
+            </h2>
+            <p className="mt-1 mb-4 text-[13px] text-muted">
+              지금 분석한 이력서를 기준으로 다른 공고들과의 매칭 점수만 빠르게 봅니다.
+              공고 사이에 <code className="rounded-[4px] bg-surface-alt px-1 py-0.5">---</code> 한
+              줄을 넣어 구분하세요 (최대 {MAX_EXTRA_JDS}개, 결과는 저장되지 않습니다).
+            </p>
+            <textarea
+              value={extraJdText}
+              onChange={(e) => setExtraJdText(e.target.value)}
+              placeholder={"공고 A 본문\n---\n공고 B 본문"}
+              className="min-h-32 w-full rounded-[9px] border border-line p-3 text-sm leading-relaxed outline-none transition focus:border-deepgreen"
+            />
+            <button
+              type="button"
+              onClick={runCompareJds}
+              disabled={isComparingJds || !extraJdText.trim()}
+              className="mt-3 rounded-[9px] border border-line bg-white px-5 py-2.5 text-base font-semibold text-ink transition hover:bg-surface-alt disabled:cursor-not-allowed disabled:text-disabled-text"
+            >
+              {isComparingJds ? "비교 중..." : "비교하기"}
+            </button>
+
+            {compareJdsError && (
+              <div className="mt-3">
+                <ErrorCard message={compareJdsError} onRetry={runCompareJds} />
+              </div>
+            )}
+
+            {jdComparisons && jdComparisons.length > 0 && (
+              <div className="mt-4 flex flex-col rounded-[12px] border border-line">
+                {jdComparisons.map((comparison, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-center justify-between gap-3 p-3.5 ${
+                      i > 0 ? "border-t border-line-soft" : ""
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{comparison.label}</p>
+                      {comparison.gap_stacks.length > 0 && (
+                        <p className="mt-0.5 truncate text-xs text-muted">
+                          부족: {comparison.gap_stacks.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                    <span className="font-outfit shrink-0 text-2xl font-bold text-deepgreen">
+                      {comparison.score}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
         </>
