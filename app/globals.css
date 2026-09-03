@@ -33,6 +33,20 @@
   --color-skeleton: #eef0ec;
   --color-track: #eaece7;
   --color-dashed: #d3d6d0;
+
+  /* 로딩 점 3개 애니메이션 — 기본 Tailwind animate-bounce는 요소 높이의 25%만
+     움직여서 6px짜리 점에는 사실상 안 보임. 고정 픽셀 진폭을 직접 지정 */
+  --animate-wave-bounce: wave-bounce 0.9s ease-in-out infinite;
+}
+
+@keyframes wave-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
 }
 
 body {

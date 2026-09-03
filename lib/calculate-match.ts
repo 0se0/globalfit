@@ -5,9 +5,16 @@ const REQUIRED_WEIGHT = 3;
 const PREFERRED_WEIGHT = 1;
 const MAX_GAP_STACKS = 3;
 
+export interface Deduction {
+  raw: string;
+  category: "required" | "preferred";
+  points: number;
+}
+
 export interface MatchResult {
   score: number;
   gap_stacks: string[];
+  deductions: Deduction[];
 }
 
 function normalize(text: string): string {
@@ -57,9 +64,40 @@ export function calculateMatch(
 
   const score = weightTotal > 0 ? Math.round((weightedSum / weightTotal) * 100) : 0;
 
-  const gap_stacks = [...missingRequired, ...missingPreferred]
-    .slice(0, MAX_GAP_STACKS)
-    .map((stack) => stack.raw);
+  // 스택 하나가 빠지면 100점 만점에서 몇 점이 깎이는지 — required/preferred는
+  // 가중치가 다르므로(3배) 카테고리별로 스택 1개당 감점 폭도 다르다
+  const perRequiredPoint =
+    requiredStacks.length > 0 && weightTotal > 0
+      ? (REQUIRED_WEIGHT / requiredStacks.length / weightTotal) * 100
+      : 0;
+  const perPreferredPoint =
+    preferredStacks.length > 0 && weightTotal > 0
+      ? (PREFERRED_WEIGHT / preferredStacks.length / weightTotal) * 100
+      : 0;
 
-  return { score, gap_stacks };
+  // required와 preferred 양쪽에 같은 스택이 들어있을 수 있음 (기업분석
+  // aggregated_stacks가 JD의 required_stacks와 겹치는 항목을 preferred에 추가하는
+  // 경우가 대표적 — merge-company-stacks.ts는 의도적으로 required_stacks를 모르는
+  // 채 동작함). 그대로 두면 같은 스택명이 감점 내역에 두 번 들어가 화면에서
+  // React key 중복 경고가 남고 감점도 이중으로 잡히므로, canonical(없으면 raw)
+  // 기준으로 중복 제거하고 먼저 나온 쪽(required 우선)의 분류를 따른다
+  const seenKeys = new Set<string>();
+  const deductions: Deduction[] = [];
+  for (const stack of [...missingRequired, ...missingPreferred]) {
+    const key = normalize(stack.canonical ?? stack.raw);
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+    const isRequired = missingRequired.some(
+      (s) => normalize(s.canonical ?? s.raw) === key
+    );
+    deductions.push({
+      raw: stack.raw,
+      category: isRequired ? "required" : "preferred",
+      points: Math.round(isRequired ? perRequiredPoint : perPreferredPoint),
+    });
+  }
+
+  const gap_stacks = deductions.slice(0, MAX_GAP_STACKS).map((d) => d.raw);
+
+  return { score, gap_stacks, deductions };
 }

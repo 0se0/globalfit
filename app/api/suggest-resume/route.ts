@@ -16,6 +16,7 @@ const RESPONSE_SCHEMA = {
     portfolio_suggestion: { type: Type.STRING },
     confirmed_gap_stacks: { type: Type.ARRAY, items: { type: Type.STRING } },
     interview_questions: { type: Type.ARRAY, items: { type: Type.STRING } },
+    narrative_gaps: { type: Type.ARRAY, items: { type: Type.STRING } },
   },
   required: [
     "resume_suggestion",
@@ -23,15 +24,20 @@ const RESPONSE_SCHEMA = {
     "portfolio_suggestion",
     "confirmed_gap_stacks",
     "interview_questions",
+    "narrative_gaps",
   ],
 };
 
 const RULES = `Follow these rules exactly:
 - resume_suggestion: rewrite the resume text with ONLY reordering of sentences/paragraphs, rewording with synonyms, shifting emphasis, or rephrasing existing facts/numbers (e.g. "팀 프로젝트 참여" -> "5인 팀에서 백엔드 담당"). NEVER add a new fact, number, experience, project name, or technology/stack name that is not already present in the original document. Output in the same language as the original document.
-- cover_letter_suggestion: if a cover letter document is provided below, rewrite it with the SAME restrictions as resume_suggestion (only reordering paragraphs, rewording, shifting emphasis — never adding new facts). If NO cover letter document is provided, return an empty string "" for this field.
+- cover_letter_suggestion: if a cover letter document is provided below, rewrite it with the SAME restrictions as resume_suggestion (only reordering paragraphs, rewording, shifting emphasis — never adding new facts). On top of that, apply these two lenses when deciding what to foreground (still reordering/rewording only, never inventing content):
+  (1) "Why" reasoning: for experiences where the original text already explains WHY the applicant made a choice (not just what they did) and/or what changed as a result, surface and foreground that reasoning more clearly — a reader should come away understanding the applicant's decision-making, not just a list of activities.
+  (2) Character signal: for experiences where the original text already reveals how the applicant works with others, leads, learns, or handles setbacks (team feedback, self-reflection, a described role in a group), foreground those passages so the letter reads as "what kind of person this applicant is," not a flat achievement list.
+  Only reorder/reword what's already there for these two lenses — if a given experience in the original text has no stated "why" or character signal at all, leave that experience's wording as-is (do not fabricate a reason or trait for it); instead flag the gap via narrative_gaps below. If NO cover letter document is provided, return an empty string "" for this field.
 - portfolio_suggestion: if a portfolio document is provided below, rewrite it with the SAME restrictions as resume_suggestion, focused on reordering/prioritizing existing projects to best match the job posting's stacks (never inventing a new project or stack). If NO portfolio document is provided, return an empty string "" for this field.
 - confirmed_gap_stacks: you are given a list of "candidate stacks" the job posting needs. For each candidate, include it in this array ONLY IF that exact stack is already literally mentioned somewhere in the original resume document (even briefly, e.g. in a project description). If a candidate is not mentioned anywhere in the original resume document, do NOT include it. Never guess or assume presence. If none are confirmed, return an empty array.
-- interview_questions: generate EXACTLY 2 realistic technical interview follow-up questions, as an interviewer would ask after reading this resume alongside the job posting's required/preferred stacks. Each question MUST reference a specific project, experience, or technology that is literally mentioned in the original resume document — do not invent scenarios or reference anything not in the document. Output in the same language as the original document.`;
+- interview_questions: generate EXACTLY 2 realistic technical interview follow-up questions, as an interviewer would ask after reading this resume alongside the job posting's required/preferred stacks. Each question MUST reference a specific project, experience, or technology that is literally mentioned in the original resume document — do not invent scenarios or reference anything not in the document. Output in the same language as the original document.
+- narrative_gaps: ONLY relevant if a cover letter document is provided (otherwise return an empty array). List up to 3 short notes, each pointing at a specific experience in the ORIGINAL cover letter that describes WHAT the applicant did but not WHY they chose to do it that way or what it reveals about how they work — phrased as a prompt telling the applicant what to add themselves (e.g. "'5인 팀 프로젝트에 참여했습니다' 부분에 왜 그 역할을 맡았는지, 그 과정에서 본인이 어떻게 기여했는지를 직접 추가하면 훨씬 설득력 있는 자소서가 됩니다"). NEVER write the missing reasoning or character trait FOR the applicant — only point out where it's missing and what kind of thing to add. If the cover letter already has clear "why"/character framing throughout, return an empty array.`;
 
 const TEXT_PROMPT = `You are helping rewrite a resume/application document, checking which candidate stacks it already mentions, and drafting interview follow-up questions. ${RULES}
 
@@ -80,6 +86,7 @@ interface GeminiSuggestionOutput {
   portfolio_suggestion: string;
   confirmed_gap_stacks: string[];
   interview_questions: string[];
+  narrative_gaps: string[];
 }
 
 export async function POST(request: Request) {
