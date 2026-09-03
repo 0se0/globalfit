@@ -49,6 +49,14 @@
   }
 }
 
+/* 화면 전체를 80% 스케일로 렌더 — UI를 브라우저 줌 80%로 맞춰 튜닝했는데
+   대부분의 사용자는 줌 100%(기본값)라서, rem 기반 크기(폰트·여백·간격)를
+   루트에서 0.8배로 낮춰 100%에서도 그 밀도로 보이게 한다. Tailwind 브레이크포인트는
+   px 기준이라 영향 없음 */
+html {
+  font-size: 80%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
