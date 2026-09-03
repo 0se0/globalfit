@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { KEYWORD_DICTIONARY } from "./keyword-dictionary";
 
-const EMBEDDING_MODEL = "gemini-embedding-001";
+export const EMBEDDING_MODEL = "gemini-embedding-001";
 // 실측 보정: 사전에 없는 표기 변형(예: "react-native")은 0.82~0.97, 서로 다른
 // 기술(예: Java vs JavaScript, MySQL vs PostgreSQL)은 0.56~0.76로 나와 0.8
 // 근처에서 깨끗하게 갈림 — 애매한 경우엔 미등록으로 남기는 쪽(암묵지 2번 원칙)이
@@ -23,7 +23,9 @@ function normalize(text: string): string {
   return text.trim().toLowerCase();
 }
 
-function cosineSimilarity(a: number[], b: number[]): number {
+// distill-profile도 같은 "임베딩 유사도" 추상을 쓰므로 재사용 — 새 벡터
+// 인프라를 따로 만들지 않는다
+export function cosineSimilarity(a: number[], b: number[]): number {
   let dot = 0;
   let normA = 0;
   let normB = 0;
@@ -54,7 +56,7 @@ function buildCanonicalTerms(): DictTerm[] {
   }));
 }
 
-async function embedTexts(ai: GoogleGenAI, texts: string[]): Promise<number[][]> {
+export async function embedTexts(ai: GoogleGenAI, texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
   const response = await ai.models.embedContent({
     model: EMBEDDING_MODEL,
