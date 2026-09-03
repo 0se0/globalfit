@@ -39,6 +39,7 @@ describe("runJudgeAgent 하드캡", () => {
       preferred_stacks: [],
       submission_method: "unclear",
       required_documents: [],
+      required_years: "",
     };
 
     const result = await runJudgeAgent("dummy jd text", parsedJob);

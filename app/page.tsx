@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type SubmitEvent } from "react";
 import { calculateMatch } from "@/lib/calculate-match";
 import type { CanonicalizedStack } from "@/lib/canonicalize-stacks";
 import { mergeCompanyStacksIntoPreferred } from "@/lib/merge-company-stacks";
+import { compareExperienceYears } from "@/lib/compare-years";
 import { ErrorCard } from "@/components/ErrorCard";
 import type { CompanyReport } from "@/app/api/analyze-company/route";
 
@@ -42,6 +43,7 @@ interface ParsedJob {
   preferred_stacks: CanonicalizedStack[];
   submission_method: "company_site" | "job_platform" | "email" | "unclear";
   required_documents: string[];
+  required_years: string;
 }
 
 interface ParsedApplicant {
@@ -440,6 +442,13 @@ export default function Home() {
       parsedApplicant.stacks
     );
   }, [parsedJob, parsedApplicant, effectivePreferredStacks]);
+
+  // 매칭 퍼센티지(calculateMatch)는 여전히 스택만으로 계산한다(하드 룰 4) —
+  // 연차 비교는 점수와 완전히 분리된 부가 배지일 뿐, 점수 계산식에 섞지 않는다
+  const yearsComparison = useMemo(() => {
+    if (!parsedJob || !parsedApplicant) return null;
+    return compareExperienceYears(parsedJob.required_years, parsedApplicant.years_of_experience);
+  }, [parsedJob, parsedApplicant]);
 
   // 재구성 제안이 "새로 찾아낸" 스택(confirmed_gap_stacks)은 원본에 이미 있었지만
   // 05가 처음에 놓친 것뿐이라, 원본 required/preferred 목록에서 같은 raw 이름의
@@ -1771,6 +1780,18 @@ export default function Home() {
                         : "명시된 서류 없음"}
                     </p>
                   </div>
+                  {yearsComparison && (
+                    <div className="flex-1">
+                      <p className="mb-0.5 text-white/60">연차 요건</p>
+                      <p className="font-medium">
+                        {yearsComparison.status === "unclear"
+                          ? "확인 불가"
+                          : yearsComparison.status === "meets"
+                            ? `충족 · 요구 ${yearsComparison.requiredMinYears}년↑`
+                            : `미충족 · 요구 ${yearsComparison.requiredMinYears}년↑`}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -18,12 +18,14 @@ const RESPONSE_SCHEMA = {
       enum: ["company_site", "job_platform", "email", "unclear"],
     },
     required_documents: { type: Type.ARRAY, items: { type: Type.STRING } },
+    required_years: { type: Type.STRING },
   },
   required: [
     "required_stacks",
     "preferred_stacks",
     "submission_method",
     "required_documents",
+    "required_years",
   ],
 };
 
@@ -35,6 +37,7 @@ const PROMPT = `You are parsing a job posting (JD) into structured JSON. Follow 
   - "email" if applying by sending an email
   - "unclear" if the JD does not explicitly state how to apply. Never guess.
 - required_documents: list only documents explicitly required by the JD (e.g. "resume", "cover letter", "portfolio"). If none are stated, return an empty array. Never guess.
+- required_years: the years-of-experience requirement exactly as stated in the JD (e.g. "3년 이상", "2-5 years", "신입"). If the JD does not explicitly state a years-of-experience requirement, return an empty string "" — never guess or infer one.
 
 Job posting:
 """
@@ -46,6 +49,7 @@ interface GeminiJobOutput {
   preferred_stacks: string[];
   submission_method: "company_site" | "job_platform" | "email" | "unclear";
   required_documents: string[];
+  required_years: string;
 }
 
 export interface ParsedJob {
@@ -53,6 +57,7 @@ export interface ParsedJob {
   preferred_stacks: CanonicalizedStack[];
   submission_method: "company_site" | "job_platform" | "email" | "unclear";
   required_documents: string[];
+  required_years: string;
 }
 
 export async function POST(request: Request) {
