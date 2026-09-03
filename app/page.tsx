@@ -73,6 +73,16 @@ interface SuggestionResult {
   narrative_gaps: string[];
 }
 
+interface GapGuideItem {
+  stack: string;
+  search_queries: string[];
+  why: string;
+}
+
+interface GapGuideResult {
+  guides: GapGuideItem[];
+}
+
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -362,6 +372,9 @@ export default function Home() {
   const [isSuggestingResume, setIsSuggestingResume] = useState(false);
   const [suggestionResult, setSuggestionResult] = useState<SuggestionResult | null>(null);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const [isLoadingGapGuide, setIsLoadingGapGuide] = useState(false);
+  const [gapGuideResult, setGapGuideResult] = useState<GapGuideResult | null>(null);
+  const [gapGuideError, setGapGuideError] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState("");
   const [roleOfInterest, setRoleOfInterest] = useState("");
   const [companyUrlsText, setCompanyUrlsText] = useState("");
@@ -587,6 +600,8 @@ export default function Home() {
     setApplicantInput(null);
     setSuggestionResult(null);
     setSuggestionError(null);
+    setGapGuideResult(null);
+    setGapGuideError(null);
     try {
       let body: ApplicantInput;
       if (file && isPdfFile(file)) {
@@ -646,6 +661,26 @@ export default function Home() {
       setSuggestionError("이력서 재구성 제안에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsSuggestingResume(false);
+    }
+  }
+
+  async function runGapGuide(gapStacks: string[], jobStacks: string[]) {
+    setIsLoadingGapGuide(true);
+    setGapGuideError(null);
+    setGapGuideResult(null);
+    try {
+      const res = await fetch("/api/gap-guide", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gapStacks, jobStacks }),
+      });
+      if (!res.ok) throw new Error("gap_guide_failed");
+      const data: GapGuideResult = await res.json();
+      setGapGuideResult(data);
+    } catch {
+      setGapGuideError("학습 가이드 생성에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsLoadingGapGuide(false);
     }
   }
 
@@ -790,6 +825,8 @@ export default function Home() {
     setApplicantInput(null);
     setSuggestionResult(null);
     setSuggestionError(null);
+    setGapGuideResult(null);
+    setGapGuideError(null);
     setCompanyName("");
     setRoleOfInterest("");
     setCompanyUrlsText("");
@@ -1713,21 +1750,83 @@ export default function Home() {
                   ? `부족한 ${matchResult.gap_stacks.length}개를 반영해 문서를 다시 쓰면 점수가 올라갑니다`
                   : "요구 스택을 모두 충족했습니다"}
               </span>
-              {!suggestionResult && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    runSuggestResume(matchResult.gap_stacks, [
-                      ...parsedJob.required_stacks.map((s) => s.raw),
-                      ...parsedJob.preferred_stacks.map((s) => s.raw),
-                    ])
-                  }
-                  disabled={isSuggestingResume}
-                  className="shrink-0 rounded-[9px] border border-lime bg-lime px-5 py-2.5 text-base font-semibold text-ink transition hover:brightness-95 disabled:cursor-not-allowed disabled:border-line disabled:bg-disabled-bg disabled:text-disabled-text"
-                >
-                  {isSuggestingResume ? "재구성 제안 생성 중..." : "이력서 재구성 제안 보기"}
-                </button>
-              )}
+              <div className="flex shrink-0 gap-2.5">
+                {matchResult.gap_stacks.length > 0 && !gapGuideResult && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      runGapGuide(matchResult.gap_stacks, [
+                        ...parsedJob.required_stacks.map((s) => s.raw),
+                        ...parsedJob.preferred_stacks.map((s) => s.raw),
+                      ])
+                    }
+                    disabled={isLoadingGapGuide}
+                    className="rounded-[9px] border border-line bg-white px-5 py-2.5 text-base font-semibold text-ink transition hover:bg-surface-alt disabled:cursor-not-allowed disabled:text-disabled-text"
+                  >
+                    {isLoadingGapGuide ? "가이드 생성 중..." : "부족 스택 학습 가이드 보기"}
+                  </button>
+                )}
+                {!suggestionResult && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      runSuggestResume(matchResult.gap_stacks, [
+                        ...parsedJob.required_stacks.map((s) => s.raw),
+                        ...parsedJob.preferred_stacks.map((s) => s.raw),
+                      ])
+                    }
+                    disabled={isSuggestingResume}
+                    className="rounded-[9px] border border-lime bg-lime px-5 py-2.5 text-base font-semibold text-ink transition hover:brightness-95 disabled:cursor-not-allowed disabled:border-line disabled:bg-disabled-bg disabled:text-disabled-text"
+                  >
+                    {isSuggestingResume ? "재구성 제안 생성 중..." : "이력서 재구성 제안 보기"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {gapGuideError && (
+          <ErrorCard
+            message={gapGuideError}
+            onRetry={() => {
+              if (matchResult && parsedJob) {
+                runGapGuide(matchResult.gap_stacks, [
+                  ...parsedJob.required_stacks.map((s) => s.raw),
+                  ...parsedJob.preferred_stacks.map((s) => s.raw),
+                ]);
+              }
+            }}
+          />
+        )}
+        {gapGuideResult && gapGuideResult.guides.length > 0 && (
+          <div className="rounded-xl border border-line bg-white p-6">
+            <div className="mb-1 flex items-baseline justify-between">
+              <h2 className="text-xl font-bold tracking-tight">
+                학습 가이드<span className="text-ghost"> — 검색어만, 링크는 직접 확인</span>
+              </h2>
+            </div>
+            <p className="mb-4 text-[13px] text-muted">
+              구체적인 강의·문서는 검증 안 된 링크를 걸지 않고, 아래 검색어를 그대로
+              구글·유튜브에 붙여넣어 직접 찾도록 안내합니다.
+            </p>
+            <div className="flex flex-col gap-4">
+              {gapGuideResult.guides.map((guide) => (
+                <div key={guide.stack} className="rounded-[12px] border border-line p-4">
+                  <p className="font-semibold text-ink">{guide.stack}</p>
+                  <p className="mt-1 text-[13px] text-muted">{guide.why}</p>
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {guide.search_queries.map((query, i) => (
+                      <span
+                        key={i}
+                        className="rounded-[6px] border border-line bg-surface-alt px-2.5 py-1 text-[13px]"
+                      >
+                        {query}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
