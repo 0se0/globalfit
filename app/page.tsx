@@ -1711,14 +1711,59 @@ export default function Home() {
           />
         )}
         {(isJudgingJob || judgeResult) && !judgeError && (
-          <div className="rounded-xl border border-line bg-white p-5 text-base">
-            <p className="mb-2 text-[13px] font-medium text-muted">판단 지점 에이전트 결과 (디버그용)</p>
-            {isJudgingJob && <p className="text-muted">분석 중...</p>}
-            {judgeResult && (
-              <pre className="overflow-x-auto rounded-[8px] bg-surface-alt p-3 text-[13px] whitespace-pre-wrap break-words">
-                {JSON.stringify(judgeResult, null, 2)}
-              </pre>
+          <div className="rounded-xl border border-line bg-white p-6">
+            <h2 className="text-xl font-bold tracking-tight">
+              판단 지점<span className="text-ghost"> 확인</span>
+            </h2>
+            {isJudgingJob && (
+              <p className="mt-2 text-[13px] text-muted">공고의 애매한 표현을 확인하는 중...</p>
             )}
+            {judgeResult &&
+              (judgeResult.skipped ? (
+                <p className="mt-2 text-[13px] text-muted">
+                  공고에 애매한 표현이나 미등록 스택이 없어, 별도 확인 없이 바로 분석했습니다.
+                </p>
+              ) : judgeResult.ambiguous_requirements.length === 0 &&
+                judgeResult.low_confidence_fields.length === 0 ? (
+                <p className="mt-2 text-[13px] text-muted">
+                  확인이 필요한 애매한 표현이나 낮은 확신도 필드가 없었습니다 (도구 호출{" "}
+                  {judgeResult.tool_call_count}회).
+                </p>
+              ) : (
+                <div className="mt-3 flex flex-col gap-4">
+                  {judgeResult.ambiguous_requirements.length > 0 && (
+                    <div>
+                      <p className="text-[13px] font-medium text-muted">애매한 표현 재해석</p>
+                      <ul className="mt-1.5 flex flex-col gap-2">
+                        {judgeResult.ambiguous_requirements.map((item, i) => (
+                          <li key={i} className="rounded-[10px] border border-line-soft p-3">
+                            <p className="text-[13px] text-muted">
+                              원문: &ldquo;{item.original_text}&rdquo;
+                            </p>
+                            <p className="mt-1 text-sm">{item.interpretation}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {judgeResult.low_confidence_fields.length > 0 && (
+                    <div>
+                      <p className="text-[13px] font-medium text-muted">낮은 확신도 필드</p>
+                      <ul className="mt-1.5 flex flex-col gap-2">
+                        {judgeResult.low_confidence_fields.map((item, i) => (
+                          <li
+                            key={i}
+                            className="rounded-[10px] border border-alertwash-line bg-alertwash p-3"
+                          >
+                            <p className="text-[13px] font-medium text-alert">{item.field}</p>
+                            <p className="mt-1 text-sm">{item.reason}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
           </div>
         )}
 
