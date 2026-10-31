@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type SubmitEvent } from "react";
 import { calculateMatch } from "@/lib/calculate-match";
 import type { CanonicalizedStack } from "@/lib/canonicalize-stacks";
 import { mergeCompanyStacksIntoPreferred } from "@/lib/merge-company-stacks";
+import { findLeakedStacks } from "@/lib/detect-leaked-stacks";
 import { compareExperienceYears } from "@/lib/compare-years";
 import { ErrorCard } from "@/components/ErrorCard";
 import type { CompanyReport } from "@/app/api/analyze-company/route";
@@ -480,15 +481,28 @@ export default function Home() {
     ]);
   }, [parsedJob, parsedApplicant, matchResult, suggestionResult, effectivePreferredStacks]);
 
-  // 개선 제안서: gap_stacks 중 11에서 "원본에 없다"고 판정된(=confirmed_gap_stacks에
-  // 없는) 항목들 — resume_suggestion 생성에 애초에 입력으로 들어가지 않아 구조적으로
-  // 본문과 섞이지 않는다
+  // 개선 제안서: gap_stacks 중 LLM이 "원본에 없다"고 판정한(=confirmed_gap_stacks에 없는)
+  // 항목들. 이 목록이 후보로 프롬프트에 함께 들어가므로 본문에서 빼는 건 프롬프트 규칙이 맡고,
+  // 실제로 새어 들어갔는지는 아래 leakedStacks가 코드로 검사한다
   const improvementSuggestions = useMemo(() => {
     if (!matchResult || !suggestionResult) return null;
     return matchResult.gap_stacks.filter(
       (stack) => !suggestionResult.confirmed_gap_stacks.includes(stack)
     );
   }, [matchResult, suggestionResult]);
+
+  const leakedStacks = useMemo(() => {
+    if (!suggestionResult || !improvementSuggestions) return [];
+    return findLeakedStacks(
+      [
+        suggestionResult.resume_suggestion,
+        ...suggestionResult.resume_edits.map((edit) => edit.replacement),
+        suggestionResult.cover_letter_suggestion,
+        suggestionResult.portfolio_suggestion,
+      ],
+      improvementSuggestions
+    );
+  }, [suggestionResult, improvementSuggestions]);
 
   useEffect(() => {
     // React 19이 XSS 방지 차원에서 javascript: href를 JSX 단계에서 무력화시켜서
@@ -2014,6 +2028,17 @@ export default function Home() {
                 <p className="font-outfit text-3xl font-bold text-ink">{potentialMatch.score}</p>
               </div>
             </div>
+
+            {leakedStacks.length > 0 && (
+              <div className="rounded-[12px] border border-alert bg-alertwash p-4 text-sm leading-relaxed text-alert">
+                <p className="font-semibold">확인이 필요합니다</p>
+                <p className="mt-1">
+                  재구성문에 원본에서 확인되지 않은 기술이 포함됐을 수 있습니다:{" "}
+                  <span className="font-semibold">{leakedStacks.join(", ")}</span>. 실제로
+                  경험한 내용이 아니라면 본문에서 빼 주세요.
+                </p>
+              </div>
+            )}
 
             {suggestionResult.resume_edits.length > 0 && (
               <div className="rounded-[12px] border border-line">
