@@ -1,5 +1,29 @@
 # GlobalFit
 
+## English summary
+
+**GlobalFit** is a job-application assistant for job seekers. Paste a job posting and a resume (cover letter and portfolio are optional) and it returns a skill-gap analysis, how to submit, tailored document suggestions, and before/after match scores. It is built with Next.js, TypeScript, LangChain.js and LangGraph.js, using the Gemini API on the free tier.
+
+It started when I saw teammates in a company-analysis competition rely on AI output they could not verify. The goal became: use AI, but make the result checkable.
+
+- **Deterministic scoring, not an LLM.** The match score comes from a pure function ([`lib/calculate-match.ts`](lib/calculate-match.ts)), so the same input always gives the same score. Required skills are weighted 3x, and the original / improved / potential scores all reuse this one function.
+- **Guards against made-up content.** If a posting does not say how to apply, the field is `"unclear"` instead of a guess. Skills missing from the original resume are kept out of the rewritten text and listed only in a separate suggestions section marked "you decide whether you have this". These rules are enforced in the prompts. After generation, a code-level check ([`lib/detect-leaked-stacks.ts`](lib/detect-leaked-stacks.ts)) scans the rewritten resume, cover letter, portfolio and suggested edits for any skill that was not confirmed in the original, and shows a warning if one slipped in. It only warns and never edits the text, so the user stays the one who decides.
+- **A measured similarity threshold.** Skill names are normalized by embedding similarity against an in-memory keyword index, and English names are never translated. The 0.8 threshold was set from measurements: spelling variants of the same technology scored 0.82–0.97, while different technologies with similar names (e.g. Java vs JavaScript) scored 0.56–0.76.
+- **A small, capped agent.** A LangGraph agent with three tools, hard-capped at five iterations, reviews ambiguous requirements. A code-level gate skips it entirely when a posting shows no ambiguity signals.
+- **Working within a free-tier quota.** After hitting Gemini's limit of 20 calls per day, I merged the two-step PDF flow (extract text, then structure it) into one multimodal call, which cut a PDF resume from 44 s to 7.3 s in a measured run ([`app/api/parse-applicant/route.ts`](app/api/parse-applicant/route.ts)).
+- **Failure handling and tests.** There are eight serverless API routes; six of the seven LLM-calling routes retry once and send an optional Discord webhook alert on failure. 27 Vitest tests (`npm test`) cover pure-function logic (23) and the pipeline with the LLM mocked (4), so they check orchestration, scoring and error handling rather than the model's real output quality.
+
+### How this was built with AI coding tools
+
+The code was written with Claude Code (Anthropic's coding agent). My part was deciding what to build, writing the rules it must follow, reviewing its output against those rules, and counting work as done only when the agreed checks pass.
+
+- [`CLAUDE.md`](CLAUDE.md) is the rule file Claude Code loads at the start of every session. It fixes the stack, the hard rules (for example: the match score must never be computed by an LLM; never add facts that are not in the source document; free-tier services only; no changes outside the requested scope), and the definition of "done" as automated checks.
+- The file is written in Korean, and a few references in it point to private planning notes that are not part of this repository.
+
+*The Korean documentation follows.*
+
+---
+
 취업 준비생을 위한 지원 과정 비서. 채용 공고와 이력서(+자소서·포트폴리오)를 넣으면
 **기술 갭 분석 · 제출 방법 · 문서 맞춤 재구성 · 개선 전후 점수**를 한 번에 얻는다.
 
@@ -9,6 +33,9 @@
 ---
 
 ## 왜 만들었나
+
+기업분석 공모전에서 팀원들이 검증할 수 없는 AI 분석 결과에 의존하는 모습을 보고, AI를
+쓰면서도 결과를 검증할 수 있는 도구를 직접 만들어 보기로 했다.
 
 기업분석 공모전에 참여하며 이 도구로 실제 기업분석과 취업 로드맵을 작성했고, 그 결과로
 수상했다. 이후 "요즘 AI로 취준 문서를 비교하는 도구는 많은데, **조금이라도 더 정확하게**
@@ -26,12 +53,16 @@
 나온다. 원본 / 개선 후 / 잠재 최대 세 점수 모두 이 함수 하나를 재사용한다.
 스택 하나가 빠질 때 몇 점이 깎이는지도 함께 보여준다(`deductions`).
 
-### 2. 할루시네이션을 프롬프트가 아니라 아키텍처로 막는다
+### 2. 지어낸 내용은 규칙으로 제한하고, 새어 나왔는지는 코드가 검사한다
 
-- 공고에 지원 방법이 명시돼 있지 않으면 `"unclear"` — 추측하지 않는다
+- 공고에 지원 방법이 명시돼 있지 않으면 `"unclear"` — 추측하지 않도록 프롬프트로 규정한다
+  (출력 형식은 스키마 enum으로 강제되지만, 언제 `unclear`를 고를지는 모델의 판단이다)
 - 원본 서류에 없는 항목은 재구성문 본문에 넣지 않도록 프롬프트 규칙으로 못 박고,
   별도 "개선 제안서"에 "보유 여부는 사용자가 직접 판단" 문구와 함께만 기록한다
-  (모킹된 LLM 응답 기준으로, `npm test`가 문자열 검색으로 검증)
+- 생성 후에는 코드가 재구성문(이력서·자소서·포트폴리오·첨삭 대체 문구)에 그 항목이
+  들어갔는지 검사해, 들어갔으면 화면에 경고한다
+  ([`lib/detect-leaked-stacks.ts`](lib/detect-leaked-stacks.ts)). 경고만 하고 본문은 고치지
+  않는다 — 판단은 사용자가 한다 (`npm test`: 검사 단위 테스트 + 모킹된 응답 기준 문자열 검색)
 - 문서 "다듬기"의 허용 범위가 [`suggest-resume`](app/api/suggest-resume/route.ts)의
   프롬프트 규칙에 못 박혀 있다: 재배열·동의어 교체·강조 이동은 허용, 새 사실 추가는 금지
 
@@ -86,6 +117,12 @@ Gemini 무료 티어의 `generateContent` 일일 호출 한도(20회/일, 롤링
 - **RAG (인메모리 벡터스토어)** — 키워드 사전을 하드코딩 대신 임베딩 유사도로,
   세션마다 즉석 생성
 - LLM: 무료 티어 모델만 사용
+
+## AI 코딩 도구 사용 방식
+
+코드는 Claude Code(AI 코딩 에이전트)로 작성했고, 저는 무엇을 어떤 규칙으로 만들지 정하고
+결과를 그 규칙에 비춰 검수했다. 에이전트가 매 세션 읽는 규칙 파일은 [`CLAUDE.md`](CLAUDE.md)이며,
+작업의 "완료"는 `npm test` 통과로 정의했다.
 
 ## 범위
 
