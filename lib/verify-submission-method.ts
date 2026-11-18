@@ -38,12 +38,14 @@ function methodsSupportedBy(jdText: string): Set<ClaimedMethod> {
   for (const sentence of jdText.split(SENTENCE_SPLIT)) {
     if (!sentence.trim()) continue;
     const hasAddress = EMAIL_ADDRESS.test(sentence);
+    // "합리적 편의 제공을 요청하려면 이메일로 연락하세요" 같은 지원 무관 문장이 "apply ... via e-mail"
+    // 패턴에 걸리지 않도록, 지원 무관 문맥 가드는 이메일 근거 판정 전체에 적용한다
+    const isApplicationContext = !NOT_AN_APPLICATION.test(sentence);
     if (
-      APPLY_BY_EMAIL.test(sentence) ||
-      APPLY_BY_EMAIL_KO.test(sentence) ||
-      (hasAddress &&
-        !NOT_AN_APPLICATION.test(sentence) &&
-        (EMAIL_SEND_EN.test(sentence) || EMAIL_SEND_KO.test(sentence)))
+      isApplicationContext &&
+      (APPLY_BY_EMAIL.test(sentence) ||
+        APPLY_BY_EMAIL_KO.test(sentence) ||
+        (hasAddress && (EMAIL_SEND_EN.test(sentence) || EMAIL_SEND_KO.test(sentence))))
     ) {
       supported.add("email");
     }

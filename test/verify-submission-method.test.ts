@@ -76,6 +76,12 @@ describe("verifySubmissionMethod — 실제 공고에서 나온 함정 문장 (�
     );
   });
 
+  it("장애인 편의 제공(accommodation) 요청 안내는 이메일 지원 방법이 아니다", () => {
+    const text =
+      "If you require a reasonable accommodation to apply for a job, please contact us via e-mail at hr@example.com or via mail at 101 Main St.";
+    expect(verifySubmissionMethod(text, "email")).toBe("unclear");
+  });
+
   it("채용 페이지 접근성 안내나 사기 주의 문구는 지원 방법이 아니다", () => {
     const text =
       "Datadog endeavors to make our Careers Page accessible to all users. Our open roles are posted on our Careers Page at careers.example.com, and recruiters write only from @example.com addresses.";
