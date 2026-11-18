@@ -73,7 +73,7 @@ Next.js + TypeScript + LangChain.js + LangGraph.js
    *Enforced by:* code (`lib/calculate-match.ts` is a pure function with no model call).
    *Test:* unit tests for scoring and deductions, plus property-based tests on random inputs (score
    bounds, determinism, monotonicity in the applicant's skills, order and case invariance, deduction
-   accounting).
+   accounting, including stacks that appear in both lists).
 
 5. **The judgment-point agent has three tools and a hard cap.** Tools: `lookup_keyword`,
    `check_ambiguous_requirement`, `flag_low_confidence`. The model chooses which to call and in what
@@ -125,7 +125,10 @@ Next.js + TypeScript + LangChain.js + LangGraph.js
      posting and the resume.
    - The required stacks found in the company's recent postings (`job_strategy.aggregated_stacks`)
      are merged into the target posting's `preferred_stacks` (deduplicated by canonical name) before
-     scoring. `required_stacks` is never changed, and scoring itself stays pure code (rule 4).
+     scoring. `required_stacks` is never changed, and scoring itself stays pure code (rule 4). A
+     required stack that the analysis also lists is therefore counted again as a preferred one
+     (the company's emphasis); the deduction breakdown shows both parts, labelled "required" and
+     "company request", so it adds up to the points lost.
    *Enforced by:* prompt ("base every fact only on the source materials", empty string when absent),
    code (the empty-field display, the disabled "show match result" button until a report exists,
    `mergeCompanyStacksIntoPreferred`). *Test:* unit tests for the merge, including that

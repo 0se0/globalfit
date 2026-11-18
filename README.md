@@ -12,7 +12,7 @@ It started when I saw teammates in a company-analysis competition rely on AI out
 - **A small, capped agent.** A LangGraph agent with three tools, hard-capped at five iterations, reviews ambiguous requirements. A code-level gate skips it entirely when a posting shows no ambiguity signals.
 - **Working within a free-tier quota.** After hitting Gemini's limit of 20 calls per day, I merged the two-step PDF flow (extract text, then structure it) into one multimodal call, which cut a PDF resume from 44 s to 7.3 s in a measured run ([`app/api/parse-applicant/route.ts`](app/api/parse-applicant/route.ts)).
 - **Fetching untrusted URLs safely.** The posting fetch opens a headless browser on whatever URL the user gives, so it blocks non-public targets (loopback, private ranges, cloud metadata, alternate IP spellings, IPv6 forms) on the first URL and on every redirect and sub-request ([`lib/safe-url.ts`](lib/safe-url.ts)). I reproduced the problem first (the old route returned the local server's page for four loopback spellings), then checked the fix with a real Chrome that follows redirects ([`scripts/verify-ssrf-guard.ts`](scripts/verify-ssrf-guard.ts)). DNS rebinding and rate limiting are known gaps.
-- **Failure handling and tests.** There are eight serverless API routes; six of the seven LLM-calling routes retry once and send an optional Discord webhook alert on failure. 76 Vitest tests (`npm test`) cover pure-function logic (72) and the pipeline with the LLM mocked (4), so they check orchestration, scoring and error handling rather than the model's real output quality. The score function also has property-based tests: random inputs check invariants such as "adding a skill never lowers the score", and deliberately broken implementations confirm the tests catch violations.
+- **Failure handling and tests.** There are eight serverless API routes; six of the seven LLM-calling routes retry once and send an optional Discord webhook alert on failure. 80 Vitest tests (`npm test`) cover pure-function logic (76) and the pipeline with the LLM mocked (4), so they check orchestration, scoring and error handling rather than the model's real output quality. The score function also has property-based tests: random inputs check invariants such as "adding a skill never lowers the score", and deliberately broken implementations confirm the tests catch violations.
 
 ### How this was built with AI coding tools
 
@@ -85,7 +85,9 @@ The code was written with Claude Code (Anthropic's coding agent). My part was de
 환경 분석(SWOT·PEST·TOWS) · 채용 전략·로드맵)를 따르므로, "이 회사 분석 결과"를 얻는
 동시에 "기업분석은 이렇게 하는 것"이라는 틀을 함께 가져간다. 회사 자료에 없는 항목
 (하루 일과, 3·5·7년 뒤 업무 범위 변화 등)은 지어내지 않고 "직접 조사하는 법"을 안내한다.
-분석에서 나온 "그 회사의 반복 요구 스택"은 매칭 점수의 우대 스택에 반영된다.
+분석에서 나온 "그 회사의 반복 요구 스택"은 매칭 점수의 우대 스택에 반영된다. 필수 스택과 겹치면 한 번 더
+반영되며(회사가 강조하는 만큼 가산), 감점 내역에 "필수"와 "기업 요구" 두 줄로 나뉘어 표시돼 합계가
+잃은 점수와 맞는다.
 
 ### 5. 무료 티어 제약을 기능 축소가 아니라 구조 개선으로 해결한다
 
