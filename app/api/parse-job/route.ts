@@ -2,6 +2,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { NextResponse } from "next/server";
 import { canonicalizeStacks, type CanonicalizedStack } from "@/lib/canonicalize-stacks";
 import { retryOnce } from "@/lib/retry-once";
+import { verifySubmissionMethod } from "@/lib/verify-submission-method";
 import { reportFailure } from "@/lib/report-failure";
 
 export const maxDuration = 30;
@@ -88,6 +89,7 @@ export async function POST(request: Request) {
 
     const result: ParsedJob = {
       ...parsed,
+      submission_method: verifySubmissionMethod(jdText, parsed.submission_method),
       required_stacks,
       preferred_stacks,
     };
