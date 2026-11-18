@@ -504,6 +504,11 @@ export default function Home() {
     );
   }, [parsedJob, companyReport]);
 
+  // 공고에서 비교할 스택이 하나도 없으면 점수는 0이고 감점 내역도 비어 "나쁜 점수"로 읽히므로
+  // 계산할 수 없는 상태임을 따로 알린다 (회사 스택이 합쳐진 우대까지 포함해 비어 있을 때)
+  const hasNoJobStacks =
+    !!parsedJob && parsedJob.required_stacks.length === 0 && effectivePreferredStacks.length === 0;
+
   const hasRepeatedDeduction = useMemo(() => {
     if (!matchResult) return false;
     const names = matchResult.deductions.map((d) => d.raw.trim().toLowerCase());
@@ -1827,6 +1832,12 @@ export default function Home() {
                   100점에서 시작해 부족한 스택마다 감점됩니다 (하드 룰 기반 계산이라 같은
                   입력이면 항상 같은 점수).
                 </p>
+                {hasNoJobStacks && (
+                  <p className="rounded-[8px] bg-white/10 px-3 py-2 text-sm leading-relaxed text-white">
+                    공고에서 기술 스택을 찾지 못해 점수를 계산할 수 없습니다. 공고 본문에 기술
+                    요구사항이 있는지 확인해 주세요.
+                  </p>
+                )}
                 {matchResult.deductions.length > 0 && (
                   <div className="flex flex-col gap-1.5 border-t border-white/15 pt-3.5 text-sm">
                     <p className="text-white/60">감점 내역</p>
@@ -1936,7 +1947,9 @@ export default function Home() {
               <span className="text-sm text-muted">
                 {matchResult.gap_stacks.length > 0
                   ? `부족한 ${matchResult.gap_stacks.length}개를 반영해 문서를 다시 쓰면 점수가 올라갑니다`
-                  : "요구 스택을 모두 충족했습니다"}
+                  : hasNoJobStacks
+                    ? "비교할 요구 스택이 없습니다"
+                    : "요구 스택을 모두 충족했습니다"}
               </span>
               <div className="flex shrink-0 gap-2.5">
                 {matchResult.gap_stacks.length > 0 && !gapGuideResult && (
