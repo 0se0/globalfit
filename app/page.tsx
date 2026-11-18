@@ -491,6 +491,25 @@ export default function Home() {
     );
   }, [matchResult, suggestionResult]);
 
+  // 우대 감점 줄이 JD의 우대인지 기업분석에서 합쳐진 것인지 구분해 보여주기 위한 이름 집합 —
+  // 병합 규칙(JD 우대와 canonical이 같으면 JD 쪽을 유지)과 같은 기준으로 가른다
+  const companyRequestedNames = useMemo(() => {
+    const jdPreferredKeys = new Set(
+      (parsedJob?.preferred_stacks ?? []).map((s) => (s.canonical ?? s.raw).toLowerCase())
+    );
+    return new Set(
+      (companyReport?.job_strategy.aggregated_stacks ?? [])
+        .filter((s) => !jdPreferredKeys.has((s.canonical ?? s.raw).toLowerCase()))
+        .map((s) => s.raw.trim().toLowerCase())
+    );
+  }, [parsedJob, companyReport]);
+
+  const hasRepeatedDeduction = useMemo(() => {
+    if (!matchResult) return false;
+    const names = matchResult.deductions.map((d) => d.raw.trim().toLowerCase());
+    return new Set(names).size < names.length;
+  }, [matchResult]);
+
   const leakedStacks = useMemo(() => {
     if (!suggestionResult || !improvementSuggestions) return [];
     return findLeakedStacks(
@@ -1813,11 +1832,20 @@ export default function Home() {
                     <p className="text-white/60">감점 내역</p>
                     <ul className="flex flex-col gap-1">
                       {matchResult.deductions.map((d) => (
-                        <li key={d.raw} className="flex items-center justify-between gap-3">
+                        <li
+                          key={`${d.category}-${d.raw}`}
+                          className="flex items-center justify-between gap-3"
+                        >
                           <span className="truncate">
                             {d.raw}{" "}
                             <span className="text-white/50">
-                              ({d.category === "required" ? "필수" : "우대"})
+                              (
+                              {d.category === "required"
+                                ? "필수"
+                                : companyRequestedNames.has(d.raw.trim().toLowerCase())
+                                  ? "기업 요구"
+                                  : "우대"}
+                              )
                             </span>
                           </span>
                           <span className="font-outfit shrink-0 font-semibold text-lime">
@@ -1826,6 +1854,11 @@ export default function Home() {
                         </li>
                       ))}
                     </ul>
+                    {hasRepeatedDeduction && (
+                      <p className="text-xs leading-relaxed text-white/60">
+                        같은 스택이 필수와 우대(기업 요구)에 모두 있어 한 번 더 반영됩니다.
+                      </p>
+                    )}
                   </div>
                 )}
                 <div className="flex gap-4 border-t border-white/15 pt-3.5 text-sm">

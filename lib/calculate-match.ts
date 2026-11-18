@@ -75,29 +75,46 @@ export function calculateMatch(
       ? (PREFERRED_WEIGHT / preferredStacks.length / weightTotal) * 100
       : 0;
 
-  // required와 preferred 양쪽에 같은 스택이 들어있을 수 있음 (기업분석
-  // aggregated_stacks가 JD의 required_stacks와 겹치는 항목을 preferred에 추가하는
-  // 경우가 대표적 — merge-company-stacks.ts는 의도적으로 required_stacks를 모르는
-  // 채 동작함). 그대로 두면 같은 스택명이 감점 내역에 두 번 들어가 화면에서
-  // React key 중복 경고가 남고 감점도 이중으로 잡히므로, canonical(없으면 raw)
-  // 기준으로 중복 제거하고 먼저 나온 쪽(required 우선)의 분류를 따른다
-  const seenKeys = new Set<string>();
-  const deductions: Deduction[] = [];
-  for (const stack of [...missingRequired, ...missingPreferred]) {
-    const key = normalize(stack.canonical ?? stack.raw);
-    if (seenKeys.has(key)) continue;
-    seenKeys.add(key);
-    const isRequired = missingRequired.some(
-      (s) => normalize(s.canonical ?? s.raw) === key
-    );
-    deductions.push({
-      raw: stack.raw,
-      category: isRequired ? "required" : "preferred",
-      points: Math.round(isRequired ? perRequiredPoint : perPreferredPoint),
-    });
+  // required와 preferred 양쪽에 같은 스택이 들어있을 수 있음 (기업분석 aggregated_stacks가
+  // JD의 required_stacks와 겹치는 항목을 preferred에도 추가하는 경우가 대표적 — merge-company-
+  // stacks.ts는 의도적으로 required_stacks를 모르는 채 동작함). 회사가 반복해서 요구하는 필수
+  // 스택은 점수에 한 번 더 반영되는 게 의도이므로(필수 몫 + 우대 몫), 감점 내역에도 두 줄로 보여
+  // 합계가 잃은 점수와 맞게 한다. 같은 목록 안에서 이름이 겹치면 한 줄로 합친다
+  const rows = [
+    ...groupMissing(missingRequired, "required", perRequiredPoint),
+    ...groupMissing(missingPreferred, "preferred", perPreferredPoint),
+  ];
+  const deductions: Deduction[] = rows.map(({ raw, category, points }) => ({ raw, category, points }));
+
+  // 부족 스택(문서 재구성·학습 가이드의 대상)은 두 줄로 나뉜 스택도 이름 기준 한 번만 센다
+  const gapKeys = new Set<string>();
+  const gap_stacks: string[] = [];
+  for (const row of rows) {
+    if (gapKeys.has(row.key)) continue;
+    gapKeys.add(row.key);
+    gap_stacks.push(row.raw);
+    if (gap_stacks.length === MAX_GAP_STACKS) break;
   }
 
-  const gap_stacks = deductions.slice(0, MAX_GAP_STACKS).map((d) => d.raw);
-
   return { score, gap_stacks, deductions };
+}
+
+function groupMissing(
+  missing: CanonicalizedStack[],
+  category: Deduction["category"],
+  perStackPoints: number
+): (Deduction & { key: string })[] {
+  const groups = new Map<string, { raw: string; count: number }>();
+  for (const stack of missing) {
+    const key = normalize(stack.canonical ?? stack.raw);
+    const group = groups.get(key);
+    if (group) group.count += 1;
+    else groups.set(key, { raw: stack.raw, count: 1 });
+  }
+  return [...groups].map(([key, { raw, count }]) => ({
+    key,
+    raw,
+    category,
+    points: Math.round(count * perStackPoints),
+  }));
 }

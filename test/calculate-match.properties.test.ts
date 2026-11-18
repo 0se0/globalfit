@@ -135,14 +135,13 @@ const PROPERTIES: Property[] = [
     },
   },
   {
-    name: "감점 합이 (100 − 점수)와 반올림 오차 안에서 맞는다",
+    name: "감점 합이 (100 − 점수)와 반올림 오차 안에서 맞는다 (필수·우대에 같은 스택이 겹쳐도)",
     check: (fn, rng) => {
-      // 같은 스택이 required/preferred에 겹치면 감점이 한 번만 잡히므로, 이름이 겹치지 않게 만든다
-      const names = genDistinctNames(rng, 2 + Math.floor(rng() * 8));
-      const split = 1 + Math.floor(rng() * (names.length - 1));
-      const [r, p] = [names.slice(0, split).map(reg), names.slice(split).map(reg)];
-      const a = names.filter(() => rng() < 0.5).map(reg);
+      const [r, p, a] = [genList(rng, 6), genList(rng, 6), genList(rng, 8)];
+      // 공고에 스택이 하나도 없으면 점수는 0이고 깎을 항목도 없어 "잃은 점수"가 정의되지 않는다
+      if (r.length + p.length === 0) return null;
       const { score, deductions } = fn(r, p, a);
+      // 줄마다 반올림되므로 줄 수만큼의 오차를 허용한다
       const sum = deductions.reduce((acc, d) => acc + d.points, 0);
       const tolerance = 0.5 * (deductions.length + 1);
       return Math.abs(sum - (100 - score)) <= tolerance
@@ -151,11 +150,19 @@ const PROPERTIES: Property[] = [
     },
   },
   {
-    name: "gap_stacks는 감점 항목의 앞 3개다",
+    name: "gap_stacks는 감점 항목에서 이름 기준으로 중복 없이 앞 3개다",
     check: (fn, rng) => {
       const [r, p, a] = [genList(rng, 8), genList(rng, 8), genList(rng, 4)];
       const { gap_stacks, deductions } = fn(r, p, a);
-      const expected = deductions.slice(0, 3).map((d) => d.raw);
+      const seen = new Set<string>();
+      const expected: string[] = [];
+      for (const d of deductions) {
+        const key = d.raw.trim().toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        expected.push(d.raw);
+        if (expected.length === 3) break;
+      }
       return show(gap_stacks) === show(expected) ? null : `gap 불일치 ${show({ r, p, a })}`;
     },
   },
