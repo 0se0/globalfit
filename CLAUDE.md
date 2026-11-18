@@ -71,7 +71,9 @@ Next.js + TypeScript + LangChain.js + LangGraph.js
 4. **The match score is never computed by an LLM.** Matching is plain code, including inside any
    LangGraph node. The original, improved and potential scores all reuse the same function.
    *Enforced by:* code (`lib/calculate-match.ts` is a pure function with no model call).
-   *Test:* unit tests for scoring and deductions.
+   *Test:* unit tests for scoring and deductions, plus property-based tests on random inputs (score
+   bounds, determinism, monotonicity in the applicant's skills, order and case invariance, deduction
+   accounting).
 
 5. **The judgment-point agent has three tools and a hard cap.** Tools: `lookup_keyword`,
    `check_ambiguous_requirement`, `flag_low_confidence`. The model chooses which to call and in what
