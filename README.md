@@ -11,7 +11,8 @@ It started when I saw teammates in a company-analysis competition rely on AI out
 - **A measured similarity threshold.** Skill names are normalized by embedding similarity against an in-memory keyword index, and English names are never translated. The 0.8 threshold was set from measurements: spelling variants of the same technology scored 0.82–0.97, while different technologies with similar names (e.g. Java vs JavaScript) scored 0.56–0.76.
 - **A small, capped agent.** A LangGraph agent with three tools, hard-capped at five iterations, reviews ambiguous requirements. A code-level gate skips it entirely when a posting shows no ambiguity signals.
 - **Working within a free-tier quota.** After hitting Gemini's limit of 20 calls per day, I merged the two-step PDF flow (extract text, then structure it) into one multimodal call, which cut a PDF resume from 44 s to 7.3 s in a measured run ([`app/api/parse-applicant/route.ts`](app/api/parse-applicant/route.ts)).
-- **Failure handling and tests.** There are eight serverless API routes; six of the seven LLM-calling routes retry once and send an optional Discord webhook alert on failure. 55 Vitest tests (`npm test`) cover pure-function logic (51) and the pipeline with the LLM mocked (4), so they check orchestration, scoring and error handling rather than the model's real output quality. The score function also has property-based tests: random inputs check invariants such as "adding a skill never lowers the score", and deliberately broken implementations confirm the tests catch violations.
+- **Fetching untrusted URLs safely.** The posting fetch opens a headless browser on whatever URL the user gives, so it blocks non-public targets (loopback, private ranges, cloud metadata, alternate IP spellings, IPv6 forms) on the first URL and on every redirect and sub-request ([`lib/safe-url.ts`](lib/safe-url.ts)). I reproduced the problem first (the old route returned the local server's page for four loopback spellings), then checked the fix with a real Chrome that follows redirects ([`scripts/verify-ssrf-guard.ts`](scripts/verify-ssrf-guard.ts)). DNS rebinding and rate limiting are known gaps.
+- **Failure handling and tests.** There are eight serverless API routes; six of the seven LLM-calling routes retry once and send an optional Discord webhook alert on failure. 76 Vitest tests (`npm test`) cover pure-function logic (72) and the pipeline with the LLM mocked (4), so they check orchestration, scoring and error handling rather than the model's real output quality. The score function also has property-based tests: random inputs check invariants such as "adding a skill never lowers the score", and deliberately broken implementations confirm the tests catch violations.
 
 ### How this was built with AI coding tools
 
@@ -95,6 +96,15 @@ Gemini 무료 티어의 `generateContent` 일일 호출 한도(20회/일, 롤링
 (구현은 [`app/api/parse-applicant/route.ts`](app/api/parse-applicant/route.ts) 참고).
 애매함 신호(우대/선호 문구, 미등록 스택)가 전혀 없는 공고는 판단 지점 에이전트
 자체를 호출하지 않는 필터(`shouldRunJudgeAgent`)도 같은 이유로 추가했다.
+
+### 6. 사용자가 준 URL을 서버가 여는 기능은 내부 주소 접근을 막는다
+
+공고 URL을 넣으면 서버가 헤드리스 브라우저로 그 주소를 연다. 그대로 두면 서버 자신이나 내부망
+주소를 대신 읽어 오게 만들 수 있어서(SSRF), 첫 주소와 모든 리다이렉트·하위 요청에서 내부·사설·
+메타데이터 주소와 우회 표기(`2130706433`, `[::ffff:7f00:1]` 등)를 막는다
+([`lib/safe-url.ts`](lib/safe-url.ts)). 먼저 문제를 재현하고(기존 라우트가 루프백 4가지 표기로
+로컬 서버의 페이지를 돌려줌) 수정한 뒤, 진짜 Chrome으로 리다이렉트 우회가 막히는지 확인했다.
+DNS 재바인딩과 호출 횟수 제한은 아직 막지 못한다.
 
 ## 동작 방식
 

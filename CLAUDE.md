@@ -47,7 +47,7 @@ Next.js + TypeScript + LangChain.js + LangGraph.js
 - Comments say **why** only. Do not comment what the code already shows. Forbidden: "// compute the
   score". Allowed: "// required skills weigh 3x because they directly affect eligibility".
 
-# Rules 1-9
+# Rules 1-10
 
 1. **No adjective feedback.** Never write "overall this looks great". Compare only by match
    percentage (0-100%) and technology names.
@@ -132,6 +132,19 @@ Next.js + TypeScript + LangChain.js + LangGraph.js
    `required_stacks` is untouched. The hard gate has no automated test.
    *Known gaps:* nothing in code checks that a stated fact really appears in the sources; that is
    the model's judgment. The report is only as good as the pages the user supplies.
+
+10. **A server-side fetch of a user-supplied URL never reaches a non-public address (SSRF).** Only
+    public `http`/`https` URLs on default ports are fetched. Blocked: loopback, private, link-local
+    (cloud metadata), multicast and reserved ranges for IPv4 and IPv6 (including IPv4-mapped forms and
+    alternate spellings such as `2130706433` or `0x7f.1`), `localhost`-style and internal names,
+    credentials in the URL, and any other scheme or port. Every request the headless browser makes,
+    redirects and sub-resources included, is checked the same way.
+    *Enforced by:* code (`lib/safe-url.ts` and `lib/guard-browser-requests.ts`, used by
+    `/api/fetch-job`). *Test:* unit tests with a fake DNS resolver (a table of attack patterns), and
+    `npx vite-node scripts/verify-ssrf-guard.ts`, which drives a real Chrome through redirect and
+    sub-resource bypasses (manual: it needs a local Chrome and is not part of `npm test`).
+    *Known gaps:* DNS rebinding is not closed, because the browser looks the hostname up again after
+    our check. The endpoint has no rate limit, although each call launches a headless browser.
 
 # Definition of done
 
