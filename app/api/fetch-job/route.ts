@@ -2,6 +2,8 @@ import chromium from "@sparticuz/chromium";
 import * as cheerio from "cheerio";
 import { NextResponse } from "next/server";
 import puppeteer, { type Browser } from "puppeteer-core";
+import { guardBrowserRequests } from "@/lib/guard-browser-requests";
+import { checkUrlSafety } from "@/lib/safe-url";
 
 export const maxDuration = 60;
 
@@ -37,7 +39,9 @@ async function launchBrowser(): Promise<Browser> {
 export async function POST(request: Request) {
   const { url } = (await request.json()) as { url?: string };
 
-  if (!url || !/^https?:\/\//i.test(url)) {
+  const safety = await checkUrlSafety(url);
+  if (!safety.ok) {
+    console.warn("[fetch-job] blocked url:", safety.reason);
     return NextResponse.json({ error: "invalid_url" }, { status: 400 });
   }
 
@@ -45,16 +49,9 @@ export async function POST(request: Request) {
   try {
     browser = await launchBrowser();
     const page = await browser.newPage();
-    await page.setRequestInterception(true);
-    page.on("request", (req) => {
-      if (["image", "font", "media"].includes(req.resourceType())) {
-        req.abort();
-      } else {
-        req.continue();
-      }
-    });
+    await guardBrowserRequests(page);
 
-    const response = await page.goto(url, {
+    const response = await page.goto(safety.url.href, {
       waitUntil: "domcontentloaded",
       timeout: NAV_TIMEOUT_MS,
     });
