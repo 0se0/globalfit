@@ -7,11 +7,11 @@
 It started when I saw teammates in a company-analysis competition rely on AI output they could not verify. The goal became: use AI, but make the result checkable.
 
 - **Deterministic scoring, not an LLM.** The match score comes from a pure function ([`lib/calculate-match.ts`](lib/calculate-match.ts)), so the same input always gives the same score. Required skills are weighted 3x, and the original / improved / potential scores all reuse this one function.
-- **Guards against made-up content.** If a posting does not say how to apply, the field is `"unclear"` instead of a guess. Skills missing from the original resume are kept out of the rewritten text and listed only in a separate suggestions section marked "you decide whether you have this". These rules are enforced in the prompts. After generation, a code-level check ([`lib/detect-leaked-stacks.ts`](lib/detect-leaked-stacks.ts)) scans the rewritten resume, cover letter, portfolio and suggested edits for any skill that was not confirmed in the original, and shows a warning if one slipped in. It only warns and never edits the text, so the user stays the one who decides.
+- **Guards against made-up content.** If a posting does not say how to apply, the field is `"unclear"` instead of a guess, and code ([`lib/verify-submission-method.ts`](lib/verify-submission-method.ts)) lowers the model's answer to `"unclear"` unless a sentence in the posting ties that method to applying. Skills missing from the original resume are kept out of the rewritten text and listed only in a separate suggestions section marked "you decide whether you have this". These rules are enforced in the prompts. After generation, a code-level check ([`lib/detect-leaked-stacks.ts`](lib/detect-leaked-stacks.ts)) scans the rewritten resume, cover letter, portfolio and suggested edits for any skill that was not confirmed in the original, and shows a warning if one slipped in. It only warns and never edits the text, so the user stays the one who decides.
 - **A measured similarity threshold.** Skill names are normalized by embedding similarity against an in-memory keyword index, and English names are never translated. The 0.8 threshold was set from measurements: spelling variants of the same technology scored 0.82–0.97, while different technologies with similar names (e.g. Java vs JavaScript) scored 0.56–0.76.
 - **A small, capped agent.** A LangGraph agent with three tools, hard-capped at five iterations, reviews ambiguous requirements. A code-level gate skips it entirely when a posting shows no ambiguity signals.
 - **Working within a free-tier quota.** After hitting Gemini's limit of 20 calls per day, I merged the two-step PDF flow (extract text, then structure it) into one multimodal call, which cut a PDF resume from 44 s to 7.3 s in a measured run ([`app/api/parse-applicant/route.ts`](app/api/parse-applicant/route.ts)).
-- **Failure handling and tests.** There are eight serverless API routes; six of the seven LLM-calling routes retry once and send an optional Discord webhook alert on failure. 27 Vitest tests (`npm test`) cover pure-function logic (23) and the pipeline with the LLM mocked (4), so they check orchestration, scoring and error handling rather than the model's real output quality.
+- **Failure handling and tests.** There are eight serverless API routes; six of the seven LLM-calling routes retry once and send an optional Discord webhook alert on failure. 42 Vitest tests (`npm test`) cover pure-function logic (38) and the pipeline with the LLM mocked (4), so they check orchestration, scoring and error handling rather than the model's real output quality.
 
 ### How this was built with AI coding tools
 
@@ -55,8 +55,10 @@ The code was written with Claude Code (Anthropic's coding agent). My part was de
 
 ### 2. 지어낸 내용은 규칙으로 제한하고, 새어 나왔는지는 코드가 검사한다
 
-- 공고에 지원 방법이 명시돼 있지 않으면 `"unclear"` — 추측하지 않도록 프롬프트로 규정한다
-  (출력 형식은 스키마 enum으로 강제되지만, 언제 `unclear`를 고를지는 모델의 판단이다)
+- 공고에 지원 방법이 명시돼 있지 않으면 `"unclear"` — 추측하지 않도록 프롬프트로 규정하고,
+  모델이 답한 지원 방법이 공고 본문의 지원 문장과 맞지 않으면 코드
+  ([`lib/verify-submission-method.ts`](lib/verify-submission-method.ts))가 `unclear`로 내린다.
+  코드는 내리기만 하고 올리지는 않는다(모델의 주장을 확인할 뿐 새 사실을 만들지 않는다)
 - 원본 서류에 없는 항목은 재구성문 본문에 넣지 않도록 프롬프트 규칙으로 못 박고,
   별도 "개선 제안서"에 "보유 여부는 사용자가 직접 판단" 문구와 함께만 기록한다
 - 생성 후에는 코드가 재구성문(이력서·자소서·포트폴리오·첨삭 대체 문구)에 그 항목이

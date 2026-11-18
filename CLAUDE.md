@@ -88,9 +88,15 @@ Next.js + TypeScript + LangChain.js + LangGraph.js
 
 7. **`submission_method` and `required_documents` come only from what the posting states.** If the
    posting does not say, `submission_method` is `"unclear"`, and nothing is guessed.
-   *Enforced by:* schema (the field is an enum that includes `unclear`) and prompt ("never guess").
-   *Known gap:* when to answer `unclear` is the model's judgment. Code does not verify it, and the
-   e2e test mocks the LLM, so it checks the pipeline, not the model's behavior.
+   *Enforced by:* schema (the field is an enum that includes `unclear`), prompt ("never guess") and
+   code (`lib/verify-submission-method.ts` checks the model's answer against the posting text and
+   lowers it to `unclear` unless a sentence ties that method to an act of applying; it never raises
+   `unclear` to a method). *Test:* unit tests, including sentences from real postings that look like
+   application instructions but are not (inquiry emails, document-return requests, accessibility
+   notes).
+   *Known gaps:* the checker matches English and Korean phrasing, so unusual wording is read as
+   `unclear` (the safe direction). `required_documents` is still prompt-only. The e2e test mocks the
+   LLM, so it checks the pipeline, not the model's behavior.
 
 8. **Document rewrites may reword and reorder, never add facts.**
    - Allowed: reordering sentences or paragraphs, replacing wording with the same meaning, shifting
