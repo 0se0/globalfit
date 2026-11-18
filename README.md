@@ -12,7 +12,7 @@ It started when I saw teammates in a company-analysis competition rely on AI out
 - **A small, capped agent.** A LangGraph agent with three tools, hard-capped at five iterations, reviews ambiguous requirements. A code-level gate skips it entirely when a posting shows no ambiguity signals.
 - **Working within a free-tier quota.** After hitting Gemini's limit of 20 calls per day, I merged the two-step PDF flow (extract text, then structure it) into one multimodal call, which cut a PDF resume from 44 s to 7.3 s in a measured run ([`app/api/parse-applicant/route.ts`](app/api/parse-applicant/route.ts)).
 - **Fetching untrusted URLs safely.** The posting fetch opens a headless browser on whatever URL the user gives, so it blocks non-public targets (loopback, private ranges, cloud metadata, alternate IP spellings, IPv6 forms) on the first URL and on every redirect and sub-request ([`lib/safe-url.ts`](lib/safe-url.ts)). I reproduced the problem first (the old route returned the local server's page for four loopback spellings), then checked the fix with a real Chrome that follows redirects ([`scripts/verify-ssrf-guard.ts`](scripts/verify-ssrf-guard.ts)). DNS rebinding and rate limiting are known gaps.
-- **Failure handling and tests.** There are eight serverless API routes; six of the seven LLM-calling routes retry once and send an optional Discord webhook alert on failure. 80 Vitest tests (`npm test`) cover pure-function logic (76) and the pipeline with the LLM mocked (4), so they check orchestration, scoring and error handling rather than the model's real output quality. The score function also has property-based tests: random inputs check invariants such as "adding a skill never lowers the score", and deliberately broken implementations confirm the tests catch violations.
+- **Failure handling and tests.** There are eight serverless API routes; six of the seven LLM-calling routes retry once and send an optional Discord webhook alert on failure. 81 Vitest tests (`npm test`) cover pure-function logic (77) and the pipeline with the LLM mocked (4), so they check orchestration, scoring and error handling rather than the model's real output quality. The score function also has property-based tests: random inputs check invariants such as "adding a skill never lowers the score", and deliberately broken implementations confirm the tests catch violations.
 
 ### How this was built with AI coding tools
 
@@ -41,6 +41,37 @@ The code was written with Claude Code (Anthropic's coding agent). My part was de
 기업분석 공모전에 참여하며 이 도구로 실제 기업분석과 취업 로드맵을 작성했고, 그 결과로
 수상했다. 이후 "요즘 AI로 취준 문서를 비교하는 도구는 많은데, **조금이라도 더 정확하게**
 분석하는 걸 만들 수 있을까"라는 질문으로 계속 발전시키고 있다.
+
+## 사용 방법
+
+회원가입이 필요 없고, 화면의 네 단계를 위에서부터 채우면 된다.
+
+1. **STEP 00 — 기업분석**: 회사명(필수), 관심 직무(선택), 회사 관련 URL 3~5개(줄바꿈으로 구분)를
+   넣는다. 회사 홈페이지·보도자료·뉴스 기사처럼 회사 전반을 설명하는 페이지가 좋다. 서버가 이
+   URL들을 직접 읽어 분석하며, **이 분석이 끝나야 매칭 결과를 볼 수 있다.**
+2. **STEP 01 — 채용공고**: 공고 본문을 붙여넣거나 공고 URL을 넣는다.
+3. **STEP 02 — 이력서**: 텍스트를 붙여넣거나 파일(`.pdf` `.docx` `.html` `.htm` `.hwp`)을 첨부한다.
+4. **STEP 03 — 자소서 · 포트폴리오** (선택): 이력서와 같은 방식으로 넣는다. 넣은 문서는 모두 재구성
+   제안을 받는다.
+5. **매칭 결과 보기**를 누른다.
+
+### 결과를 읽는 법
+
+- **매칭 점수(0~100%)**: 공고가 요구하는 스택 중 내가 가진 비율이다. 필수 스택은 우대 스택보다
+  3배 무겁게 센다. 점수는 AI가 아니라 코드가 계산하므로 같은 입력이면 같은 점수가 나온다.
+  - **감점 내역**: 어떤 스택이 빠져서 몇 점이 깎였는지 스택별로 보여준다. 회사가 반복해서 요구하는
+    스택이 필수와 겹치면 "필수"와 "기업 요구" 두 줄로 나뉜다.
+  - 공고에서 비교할 스택을 하나도 찾지 못하면 점수 대신 계산할 수 없다는 안내가 나온다.
+- **제출 방법**: 공고가 지원 방법을 밝힌 경우에만 회사 사이트·채용 플랫폼·이메일 중 하나로
+  표시한다. 밝히지 않았으면 "불명확"이다(추측하지 않는다).
+- **부족한 스택과 학습 검색어**: 공고가 원하는데 내 문서에서 확인되지 않은 스택.
+- **문서 재구성 제안**: 이력서·자소서·포트폴리오의 표현과 순서를 공고에 맞게 다듬은 안이다.
+  **내 문서에 없는 기술은 본문에 넣지 않는다.** 그런 기술은 "개선 제안"에만 나오며, 실제로 보유했는지는
+  내가 판단해야 한다. 재구성문에 확인되지 않은 기술이 섞였으면 경고가 표시된다.
+- **면접 꼬리질문**도 함께 나온다.
+
+가장 최근 입력과 결과 1건만 내 브라우저에 남는다(서버 저장 없음). 영문 공고의 기술 이름은 한글로
+바꾸지 않고 원문 그대로 보여준다.
 
 ## 다른 도구와 무엇이 다른가
 
