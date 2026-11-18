@@ -194,10 +194,13 @@ function PlainBulletList({ items }: { items: string[] }) {
   );
 }
 
-const MAX_COMPANY_URLS = 3;
+// 기업분석 근거 자료는 최소 3개(한두 곳 출처에 치우치지 않게) ~ 최대 5개(입력 길이·호출 한도 보호)
+const MIN_COMPANY_URLS = 3;
+const MAX_COMPANY_URLS = 5;
 const MAX_EXTRA_JDS = 5;
 const JD_BLOCK_DELIMITER = /\n-{3,}\n/;
 
+// 중복을 뺀 유효 URL 전체를 돌려준다. 개수 검사는 호출하는 쪽에서 한다.
 function parseCompanyUrls(rawText: string): string[] {
   return Array.from(
     new Set(
@@ -206,7 +209,7 @@ function parseCompanyUrls(rawText: string): string[] {
         .map((line) => line.trim())
         .filter((line) => URL_ONLY_PATTERN.test(line))
     )
-  ).slice(0, MAX_COMPANY_URLS);
+  );
 }
 
 function companyReportToMarkdown(companyName: string, report: CompanyReport): string {
@@ -805,8 +808,14 @@ export default function Home() {
   async function handleAnalyzeCompany() {
     if (!companyName.trim()) return;
     const urls = parseCompanyUrls(companyUrlsText);
-    if (urls.length === 0) {
-      setCompanyError("회사 관련 URL을 최소 1개 입력해주세요 (회사 홈페이지, 보도자료, 뉴스 기사 등).");
+    if (urls.length < MIN_COMPANY_URLS) {
+      setCompanyError(
+        `회사 관련 URL을 최소 ${MIN_COMPANY_URLS}개 입력해주세요 (회사 홈페이지, 보도자료, 뉴스 기사 등). 현재 ${urls.length}개입니다.`
+      );
+      return;
+    }
+    if (urls.length > MAX_COMPANY_URLS) {
+      setCompanyError(`회사 관련 URL은 최대 ${MAX_COMPANY_URLS}개까지 입력할 수 있어요. 현재 ${urls.length}개입니다.`);
       return;
     }
     setIsAnalyzingCompany(true);
@@ -1031,7 +1040,7 @@ export default function Home() {
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="companyUrls" className="text-lg font-medium">
-                회사 관련 URL <span className="font-normal text-muted">최대 {MAX_COMPANY_URLS}개, 줄바꿈으로 구분</span>
+                회사 관련 URL <span className="font-normal text-muted">{MIN_COMPANY_URLS}~{MAX_COMPANY_URLS}개, 줄바꿈으로 구분</span>
               </label>
               <textarea
                 id="companyUrls"
