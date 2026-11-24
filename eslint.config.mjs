@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated design-runtime bundle (see header in the file); not hand-edited.
+    "docs/design/**",
   ]),
 ]);
 

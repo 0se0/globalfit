@@ -15,7 +15,7 @@ export default function InputEmpty() {
           <div className="border border-gray-400 p-2 text-xs">
             공고와 이력서를 모두 입력해 주세요
             <div className="mt-1 text-gray-500">
-              URL만 입력하고 아직 "가져오기"를 누르지 않은 경우도 제출이 막힙니다
+              URL만 입력하고 아직 &quot;가져오기&quot;를 누르지 않은 경우도 제출이 막힙니다
             </div>
           </div>
 
