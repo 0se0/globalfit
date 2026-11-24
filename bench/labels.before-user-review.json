@@ -1,0 +1,726 @@
+{
+ "_rules": "정답 기준(모델 결과를 보기 전에 확정): required=자격요건 섹션, preferred=우대 섹션에 명시된 구체적 기술명(언어/프레임워크/라이브러리/툴/플랫폼). e.g./such as/등으로 나온 예시도 해당 섹션의 정답으로 본다. ambiguous=개념·방법론(RAG, CI/CD, ETL 등)이거나 업무 설명에만 나온 기술이며 채점에서 가점도 감점도 없다. submission_method는 공고가 지원 경로(회사 사이트/플랫폼/이메일)를 명시한 경우만 그 값, 아니면 unclear. required_years_min은 공고에 명시된 최소 연차 숫자(없으면 null).",
+ "01": {
+  "required": [
+   "UART",
+   "GPIO",
+   "SPI",
+   "I2C",
+   "C",
+   "C++",
+   "Kotlin",
+   "Java",
+   "Android"
+  ],
+  "preferred": [
+   "ARM"
+  ],
+  "ambiguous": [
+   "EMV",
+   "PCI",
+   "microcontrollers",
+   "cryptography",
+   "telemetry"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 2
+ },
+ "02": {
+  "required": [
+   "Prometheus",
+   "Grafana",
+   "Datadog",
+   "ElasticSearch",
+   "SQL",
+   "Airflow",
+   "Trino",
+   "SQS",
+   "Cisco",
+   "Palo Alto",
+   "Jenkins",
+   "ArgoCD",
+   "GitHub Actions",
+   "AWS",
+   "GCP",
+   "Oracle Cloud",
+   "Jira",
+   "Confluence"
+  ],
+  "preferred": [
+   "Salesforce",
+   "Workday",
+   "Okta"
+  ],
+  "ambiguous": [
+   "Tableau",
+   "Superset",
+   "Claude",
+   "Copilot",
+   "Python",
+   "Go",
+   "JavaScript",
+   "TypeScript",
+   "Bash",
+   "LLM",
+   "SSO",
+   "Infrastructure as Code",
+   "CI/CD"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 3
+ },
+ "03": {
+  "required": [],
+  "preferred": [
+   "MCP",
+   "AWS Bedrock",
+   "AgentCore",
+   "OpenAI",
+   "Anthropic",
+   "Salesforce",
+   "Zendesk",
+   "Workday",
+   "NetSuite",
+   "Greenhouse",
+   "Slack",
+   "Okta",
+   "OAuth"
+  ],
+  "ambiguous": [
+   "LLM",
+   "RAG",
+   "function calling",
+   "agent frameworks",
+   "evaluation frameworks",
+   "API",
+   "SSO",
+   "SOX",
+   "ITGC",
+   "human-in-the-loop"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 5
+ },
+ "04": {
+  "required": [
+   "Python",
+   "Go",
+   "Git",
+   "OAuth2",
+   "Tines",
+   "MuleSoft",
+   "Workato",
+   "MCP"
+  ],
+  "preferred": [
+   "Agent Bricks",
+   "OpenAI Agents SDK",
+   "LangGraph",
+   "LangChain",
+   "MLflow",
+   "Okta",
+   "Microsoft Entra ID",
+   "Google Workspace",
+   "Jira",
+   "Slack",
+   "Jamf",
+   "GitHub",
+   "Workday"
+  ],
+  "ambiguous": [
+   "CI/CD",
+   "REST",
+   "LLM",
+   "RAG",
+   "function calling",
+   "event-driven integrations",
+   "vector search",
+   "LLM observability",
+   "RBAC",
+   "Databricks"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 3
+ },
+ "05": {
+  "required": [
+   "SQL",
+   "BigQuery",
+   "Python",
+   "Jupyter"
+  ],
+  "preferred": [],
+  "ambiguous": [
+   "OpenCode AI",
+   "MAS agent"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 3
+ },
+ "06": {
+  "required": [],
+  "preferred": [
+   "Reddit",
+   "Discord",
+   "Hacker News",
+   "GitHub",
+   "Stack Overflow",
+   "X"
+  ],
+  "ambiguous": [
+   "LinkedIn",
+   "YouTube",
+   "Slack",
+   "API",
+   "AI",
+   "observability",
+   "open source"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": null
+ },
+ "07": {
+  "required": [
+   "Kotlin",
+   "Java",
+   "Android"
+  ],
+  "preferred": [
+   "React Native",
+   "Kotlin Multiplatform",
+   "iOS"
+  ],
+  "ambiguous": [
+   "Stripe",
+   "SDK",
+   "API",
+   "mobile CI",
+   "observability",
+   "biometrics"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 3
+ },
+ "08": {
+  "required": [
+   "Python",
+   "PyTorch"
+  ],
+  "preferred": [],
+  "ambiguous": [
+   "LLM",
+   "RAG",
+   "reinforcement learning",
+   "quantization",
+   "fine-tuning"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 10
+ },
+ "09": {
+  "required": [
+   "JSON"
+  ],
+  "preferred": [
+   "JSON Schema",
+   "OSCAL",
+   "Python",
+   "Git",
+   "AWS"
+  ],
+  "ambiguous": [
+   "FedRAMP",
+   "SOC 2",
+   "ISO 27001",
+   "NIST 800-53",
+   "REST",
+   "API",
+   "identity and access management",
+   "AI"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 5
+ },
+ "10": {
+  "required": [
+   "HuggingFace",
+   "LangChain",
+   "DSPy",
+   "pandas",
+   "scikit-learn",
+   "PyTorch",
+   "AWS",
+   "Azure",
+   "GCP"
+  ],
+  "preferred": [
+   "Databricks",
+   "Apache Spark"
+  ],
+  "ambiguous": [
+   "RAG",
+   "Text2SQL",
+   "multi-agent systems",
+   "fine-tuning",
+   "GenAI",
+   "LLMOps"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": null
+ },
+ "11": {
+  "required": [
+   "Go",
+   "Python",
+   "SQL",
+   "PostgreSQL",
+   "MySQL",
+   "ClickHouse"
+  ],
+  "preferred": [
+   "Docker",
+   "Kubernetes",
+   "Google Cloud Platform"
+  ],
+  "ambiguous": [
+   "Scala",
+   "JVM-based languages",
+   "MCP",
+   "Workers AI",
+   "vector databases",
+   "LLM",
+   "LLM orchestration frameworks"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 5
+ },
+ "12": {
+  "required": [
+   "CUDA",
+   "RDMA",
+   "NCCL",
+   "C++",
+   "Rust",
+   "CUDA C",
+   "Python",
+   "Nsight"
+  ],
+  "preferred": [
+   "Triton",
+   "CUTLASS",
+   "NVSHMEM",
+   "Megatron-LM",
+   "TorchTitan",
+   "DeepSpeed"
+  ],
+  "ambiguous": [
+   "NVLink",
+   "tensor cores",
+   "FP8",
+   "FP4",
+   "speculative decoding",
+   "Mixture-of-Experts",
+   "LLM",
+   "all-reduce",
+   "all-to-all"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": null
+ },
+ "13": {
+  "required": [
+   "Android",
+   "Kotlin",
+   "Java",
+   "Swift",
+   "Objective-C",
+   "Go",
+   "Python"
+  ],
+  "preferred": [],
+  "ambiguous": [
+   "SDK",
+   "Stripe Terminal"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 2
+ },
+ "14": {
+  "required": [
+   "SQL",
+   "Python",
+   "Scala",
+   "Apache Spark"
+  ],
+  "preferred": [
+   "Apache Iceberg"
+  ],
+  "ambiguous": [
+   "Jira",
+   "API",
+   "slowly changing dimensions",
+   "workflow orchestration",
+   "SQL transformation frameworks"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 5
+ },
+ "15": {
+  "required": [
+   "Snowflake"
+  ],
+  "preferred": [
+   "dbt",
+   "Airflow",
+   "Workday Studio",
+   "Salesforce Apex",
+   "NetSuite SuiteScript",
+   "AWS",
+   "S3",
+   "Lambda",
+   "SQS"
+  ],
+  "ambiguous": [
+   "Salesforce",
+   "NetSuite",
+   "Workday",
+   "MuleSoft",
+   "SQL",
+   "Python",
+   "CI/CD",
+   "SOX",
+   "ITGC",
+   "change data capture",
+   "API",
+   "event-driven architectures"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 5
+ },
+ "16": {
+  "required": [
+   "SQL",
+   "Python"
+  ],
+  "preferred": [
+   "Airflow",
+   "DBT",
+   "AWS",
+   "GCP",
+   "DataHub"
+  ],
+  "ambiguous": [
+   "ETL",
+   "데이터 마트",
+   "Observability"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": null
+ },
+ "17": {
+  "required": [
+   "Kubernetes"
+  ],
+  "preferred": [
+   "vLLM",
+   "SGLang",
+   "TensorRT-LLM",
+   "Triton Inference Server"
+  ],
+  "ambiguous": [
+   "IaC",
+   "GitOps",
+   "CI/CD",
+   "API gateway",
+   "continuous batching",
+   "Prefill-Decode",
+   "prefix caching",
+   "KV cache offloading",
+   "speculative decoding",
+   "SLO",
+   "capacity planning",
+   "GPU"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 5
+ },
+ "18": {
+  "required": [
+   "GraphQL",
+   "GRPC",
+   "SQL"
+  ],
+  "preferred": [
+   "AWS",
+   "Azure",
+   "Google Cloud",
+   "Docker",
+   "Kubernetes",
+   "Spring",
+   "Java",
+   "Kotlin",
+   "Node.js",
+   "Kafka",
+   "Redis",
+   "Hive",
+   "Hadoop",
+   "Spark",
+   "ElasticSearch"
+  ],
+  "ambiguous": [
+   "RESTful",
+   "NoSQL",
+   "마이크로서비스",
+   "분산 시스템",
+   "API"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 3
+ },
+ "19": {
+  "required": [
+   "Kubernetes",
+   "Linux"
+  ],
+  "preferred": [
+   "Prometheus",
+   "Loki"
+  ],
+  "ambiguous": [
+   "Service Mesh",
+   "Alerting",
+   "AI Coding Agent",
+   "옵저버빌리티"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 3
+ },
+ "20": {
+  "required": [
+   "Kubernetes",
+   "Slurm"
+  ],
+  "preferred": [],
+  "ambiguous": [
+   "블랙웰 울트라",
+   "GPU",
+   "IaC",
+   "CI/CD",
+   "생성형 AI",
+   "LLM",
+   "capacity planning",
+   "멀티테넌시"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 8
+ },
+ "21": {
+  "required": [
+   "Java"
+  ],
+  "preferred": [
+   "JPA"
+  ],
+  "ambiguous": [
+   "MSA",
+   "분산 시스템"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 3
+ },
+ "22": {
+  "required": [
+   "gRPC"
+  ],
+  "preferred": [
+   "Kubernetes",
+   "AWS",
+   "GCP"
+  ],
+  "ambiguous": [
+   "REST",
+   "마이크로서비스",
+   "RTB",
+   "DSP",
+   "DMP",
+   "layered architecture",
+   "clean architecture",
+   "분산 트랜잭션",
+   "API"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 5
+ },
+ "23": {
+  "required": [],
+  "preferred": [],
+  "ambiguous": [
+   "LLM",
+   "SLM",
+   "VLM",
+   "VLA",
+   "Vision Language Action"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 2
+ },
+ "24": {
+  "required": [
+   "Java"
+  ],
+  "preferred": [
+   "JPA"
+  ],
+  "ambiguous": [
+   "MSA",
+   "분산 시스템"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 7
+ },
+ "25": {
+  "required": [],
+  "preferred": [
+   "Go",
+   "Kafka",
+   "Kubernetes"
+  ],
+  "ambiguous": [
+   "gRPC",
+   "gRPC-Gateway",
+   "MySQL",
+   "MongoDB",
+   "Redis",
+   "Istio",
+   "Server Driven UI",
+   "A/B 테스트",
+   "분산 시스템",
+   "마이크로서비스"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": null
+ },
+ "26": {
+  "required": [
+   "Kubernetes",
+   "Argo CD",
+   "Prometheus",
+   "Grafana",
+   "ELK",
+   "OpenTelemetry",
+   "Terraform",
+   "Karpenter",
+   "Ansible"
+  ],
+  "preferred": [
+   "Claude Code CLI",
+   "Codex CLI",
+   "MCP"
+  ],
+  "ambiguous": [
+   "GitOps",
+   "CI/CD",
+   "AIOps",
+   "SLI",
+   "SLO",
+   "SLA",
+   "Runbook",
+   "Skills",
+   "Plugin",
+   "Error Budget"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 7
+ },
+ "27": {
+  "required": [
+   "JavaScript",
+   "TypeScript",
+   "HTML5",
+   "CSS",
+   "React",
+   "Redux",
+   "Vue.js",
+   "Angular",
+   "Webpack",
+   "Babel",
+   "Jest",
+   "Storybook"
+  ],
+  "preferred": [
+   "Node.js",
+   "Express",
+   "NestJs",
+   "Git",
+   "Spring"
+  ],
+  "ambiguous": [
+   "SPA",
+   "SSR",
+   "Micro service architecture",
+   "Open API",
+   "SDK",
+   "Lean UX",
+   "CI/CD"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 8
+ },
+ "28": {
+  "required": [],
+  "preferred": [
+   "Node.js",
+   "Go",
+   "GraphQL",
+   "React"
+  ],
+  "ambiguous": [
+   "Event-Driven",
+   "Microservice",
+   "OOP",
+   "FP",
+   "Resolver 패턴",
+   "API"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 5
+ },
+ "29": {
+  "required": [
+   "MITRE ATT&CK"
+  ],
+  "preferred": [
+   "AWS",
+   "Azure",
+   "GCP"
+  ],
+  "ambiguous": [
+   "EDR",
+   "EPP",
+   "SIEM",
+   "CTI",
+   "OSINT",
+   "TTP",
+   "Threat Hunting",
+   "LLM",
+   "생성형 AI"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 5
+ },
+ "30": {
+  "required": [
+   "Java",
+   "Kotlin",
+   "Android"
+  ],
+  "preferred": [
+   "Flutter"
+  ],
+  "ambiguous": [
+   "Cross-Platform"
+  ],
+  "submission_method": "unclear",
+  "required_years_min": 6
+ }
+}

@@ -49,3 +49,7 @@ next-env.d.ts
 # 개인 개발일지·포트폴리오 소재 (최종 결과물만 공개, 이건 로컬 참고용)
 /docs/journal/
 /docs/portfolio/
+/bench/jds/
+/bench/out/
+/bench/jds-heldout/
+/bench/archive/
